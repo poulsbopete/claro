@@ -1,7 +1,18 @@
 slug: claro-elastic-serverless-observability
 id: mqb77ffgldcn
 title: Claro + Elastic Serverless Observability
-description: ""
+description: |
+  **Claro** is Latin America's largest telecommunications company, serving over 300 million subscribers across 18 countries with 5G/4G mobile networks, broadband, pay-TV (Claro TV), streaming (Claro Sports), cloud services, and IoT connectivity.
+
+  Operating at this scale — across AWS, GCP, and Azure — means Claro's engineering and SRE teams manage billions of telemetry events daily: from 5G packet core session logs and real-time CDR billing records to IoT MQTT streams and CDN video transcoding pipelines.
+
+  In this workshop you will use **Elastic Serverless Observability** to:
+  - Connect a live multi-cloud, multi-service demo environment sending real OpenTelemetry telemetry into Elastic
+  - Navigate logs, distributed traces, and host metrics from 9 simulated microservices in a single unified UI
+  - Inject realistic network faults and watch Elastic's ES|QL alert rules and AI agent detect and investigate them automatically
+  - Explore four competitive differentiators that demonstrate why Elastic outperforms the Splunk ecosystem for large-scale, cost-aware telecom environments
+
+  No prior Elastic experience is required. Each challenge builds on the last and takes 10–20 minutes to complete.
 icon: ""
 tags:
 - ai
@@ -21,5 +32,5 @@ lab_config:
     name: modern-dark
   override_challenge_layout: false
   hideStopButton: false
-checksum: "18268786792980380587"
+checksum: "16679367325959780121"
 enhanced_loading: false
