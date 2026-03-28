@@ -1,193 +1,35 @@
 #!/usr/bin/env bash
 # Challenge 4 setup: Architectural Unity
-# Ingest synthetic APM traces + correlated log lines so the user can
-# pivot from a trace span to its matching log line in one ES|QL query.
+# Real Claro OTel data is already flowing from the generators started in Lab 1.
+# Nothing to inject — just confirm the scenario is still running.
 set -euo pipefail
 
-log()  { printf "[ch4-setup] %s\n" "$*"; }
-fail() { printf "[ch4-setup] ERROR: %s\n" "$*" >&2; exit 1; }
+log() { printf "[ch4-setup] %s\n" "$*"; }
 
-# ── Retrieve credentials stored by track_scripts/setup ───────────────────────
-ES_URL=$(agent variable get ES_URL 2>/dev/null || echo "")
-ES_API_KEY=$(agent variable get ES_API_KEY 2>/dev/null || echo "")
-ES_USERNAME=$(agent variable get ES_USERNAME 2>/dev/null || echo "admin")
-ES_PASSWORD=$(agent variable get ES_PASSWORD 2>/dev/null || echo "")
+DEMO_PORT="${DEMO_PORT:-8090}"
 
-[[ -z "$ES_URL" ]]     && fail "ES_URL agent variable not set — ensure track setup completed."
-[[ -z "$ES_API_KEY" && -z "$ES_PASSWORD" ]] && fail "No ES credentials found."
+log "Lab 4 — Architectural Unity"
+log "Claro scenario generators are already running from Lab 1 setup."
+log "Real OTel logs with trace.id correlation are flowing into logs.otel."
+log ""
 
-# Build auth header
-if [[ -n "$ES_API_KEY" ]]; then
-  AUTH_HEADER="Authorization: ApiKey ${ES_API_KEY}"
+# Verify demo app is still up
+if curl -sf "http://localhost:${DEMO_PORT}/health" >/dev/null 2>&1; then
+  log "Demo app healthy ✓"
 else
-  AUTH_HEADER="Authorization: Basic $(echo -n "${ES_USERNAME}:${ES_PASSWORD}" | base64)"
+  log "WARN: Demo app may not be running — learner can proceed with existing data."
 fi
 
-es() {
-  local method="$1" path="$2" body="${3:-}"
-  if [[ -n "$body" ]]; then
-    curl -sk -X "$method" "${ES_URL}${path}" \
-      -H "$AUTH_HEADER" -H "Content-Type: application/json" -d "$body"
-  else
-    curl -sk -X "$method" "${ES_URL}${path}" -H "$AUTH_HEADER"
-  fi
-}
+# Check deployment is active
+RUNNING=$(curl -sf "http://localhost:${DEMO_PORT}/api/deployments" 2>/dev/null \
+  | python3 -c "import sys,json; deps=json.load(sys.stdin); print(sum(1 for d in deps if d.get('running')))" 2>/dev/null || echo "0")
 
-log "ES_URL: $ES_URL"
+if [[ "$RUNNING" -ge 1 ]]; then
+  log "Claro scenario running (${RUNNING} active deployment) ✓"
+else
+  log "WARN: No active deployments detected. Existing data in logs.otel will still be queryable."
+fi
 
-# ── 1. Create index templates ─────────────────────────────────────────────────
-log "Creating index templates..."
-
-es PUT "/_index_template/lab4-apm-traces" '{
-  "index_patterns": ["lab4-apm-traces-*"],
-  "template": {
-    "settings": {"number_of_shards": 1, "number_of_replicas": 0},
-    "mappings": {
-      "properties": {
-        "@timestamp":              {"type":"date"},
-        "trace.id":                {"type":"keyword"},
-        "transaction.id":          {"type":"keyword"},
-        "span.id":                 {"type":"keyword"},
-        "span.name":               {"type":"keyword"},
-        "span.duration.us":        {"type":"long"},
-        "service.name":            {"type":"keyword"},
-        "service.environment":     {"type":"keyword"},
-        "http.response.status_code":{"type":"integer"},
-        "url.path":                {"type":"keyword"},
-        "transaction.name":        {"type":"keyword"},
-        "transaction.duration.us": {"type":"long"},
-        "error":                   {"type":"boolean"},
-        "error.message":           {"type":"text"}
-      }
-    }
-  }
-}' | python3 -c "import sys,json; r=json.load(sys.stdin); print('  traces template:', r.get('acknowledged','?'))"
-
-es PUT "/_index_template/lab4-app-logs" '{
-  "index_patterns": ["lab4-app-logs-*"],
-  "template": {
-    "settings": {"number_of_shards": 1, "number_of_replicas": 0},
-    "mappings": {
-      "properties": {
-        "@timestamp":              {"type":"date"},
-        "trace.id":                {"type":"keyword"},
-        "transaction.id":          {"type":"keyword"},
-        "span.id":                 {"type":"keyword"},
-        "log.level":               {"type":"keyword"},
-        "message":                 {"type":"text"},
-        "service.name":            {"type":"keyword"},
-        "url.path":                {"type":"keyword"},
-        "http.response.status_code":{"type":"integer"},
-        "error.message":           {"type":"text"},
-        "error.stack_trace":       {"type":"text"}
-      }
-    }
-  }
-}' | python3 -c "import sys,json; r=json.load(sys.stdin); print('  logs template:  ', r.get('acknowledged','?'))"
-
-# ── 2. Generate synthetic APM traces + correlated logs ─────────────────────────
-log "Generating synthetic APM traces and correlated logs..."
-
-python3 - <<PYEOF
-import json, random, uuid, requests, os
-from datetime import datetime, timedelta, timezone
-
-ES_URL     = os.environ.get("ES_URL", "")
-ES_API_KEY = os.environ.get("ES_API_KEY", "")
-ES_USER    = os.environ.get("ES_USERNAME", "admin")
-ES_PASS    = os.environ.get("ES_PASSWORD", "")
-
-headers = {"Content-Type": "application/json"}
-auth    = None
-if ES_API_KEY:
-    headers["Authorization"] = f"ApiKey {ES_API_KEY}"
-else:
-    from requests.auth import HTTPBasicAuth
-    auth = HTTPBasicAuth(ES_USER, ES_PASS)
-
-TODAY = datetime.now(timezone.utc)
-TRACE_INDEX = f"lab4-apm-traces-{TODAY.strftime('%Y.%m.%d')}"
-LOG_INDEX   = f"lab4-app-logs-{TODAY.strftime('%Y.%m.%d')}"
-
-SERVICES  = ["checkout-service", "inventory-service", "payment-gateway"]
-ENDPOINTS = ["/api/checkout", "/api/inventory/reserve", "/api/payment/charge"]
-
-trace_bulk = ""
-log_bulk   = ""
-slow_trace = None
-
-for i in range(200):
-    svc_idx  = i % len(SERVICES)
-    service  = SERVICES[svc_idx]
-    endpoint = ENDPOINTS[svc_idx]
-    trace_id = uuid.uuid4().hex
-    txn_id   = uuid.uuid4().hex[:16]
-    span_id  = uuid.uuid4().hex[:16]
-    mins_ago = random.randint(0, 120)
-    ts = TODAY - timedelta(minutes=mins_ago)
-    ts_str = ts.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
-
-    spike = (service == "checkout-service" and mins_ago < 30)
-    if spike:
-        dur_us      = random.randint(4_000_000, 12_000_000)
-        status_code = random.choice([500, 503, 500])
-        is_error    = True
-        err_msg     = random.choice([
-            "upstream timeout from payment-gateway",
-            "database connection pool exhausted",
-            "circuit breaker OPEN on inventory-service",
-        ])
-    else:
-        dur_us      = random.randint(20_000, 400_000)
-        status_code = 200
-        is_error    = False
-        err_msg     = None
-
-    trace_doc = {
-        "@timestamp": ts_str,
-        "trace.id": trace_id, "transaction.id": txn_id, "span.id": span_id,
-        "span.name": f"HTTP {endpoint}", "span.duration.us": dur_us,
-        "service.name": service, "service.environment": "production",
-        "http.response.status_code": status_code, "url.path": endpoint,
-        "transaction.name": f"GET {endpoint}", "transaction.duration.us": dur_us,
-        "error": is_error,
-        **({"error.message": err_msg} if err_msg else {})
-    }
-    trace_bulk += json.dumps({"index": {"_index": TRACE_INDEX}}) + "\n"
-    trace_bulk += json.dumps(trace_doc) + "\n"
-
-    log_doc = {
-        "@timestamp": ts_str,
-        "trace.id": trace_id, "transaction.id": txn_id, "span.id": span_id,
-        "log.level": "ERROR" if is_error else random.choice(["INFO","INFO","WARN"]),
-        "message": f"[{service}] Request failed: {err_msg}" if is_error
-                   else f"[{service}] {endpoint} completed in {dur_us//1000}ms status={status_code}",
-        "service.name": service, "url.path": endpoint,
-        "http.response.status_code": status_code,
-        **({"error.message": err_msg,
-            "error.stack_trace": f"at {service}/handlers/route.js:142"} if is_error else {})
-    }
-    log_bulk += json.dumps({"index": {"_index": LOG_INDEX}}) + "\n"
-    log_bulk += json.dumps(log_doc) + "\n"
-
-    if slow_trace is None and is_error:
-        slow_trace = trace_id
-
-def bulk_index(data):
-    r = requests.post(f"{ES_URL}/_bulk", data=data,
-                      headers={**headers, "Content-Type": "application/x-ndjson"},
-                      auth=auth, verify=False, timeout=60)
-    return r.json().get("errors", True)
-
-print(f"  Traces indexed (errors={bulk_index(trace_bulk)})")
-print(f"  Logs indexed   (errors={bulk_index(log_bulk)})")
-
-with open("/tmp/lab4_trace.txt", "w") as f:
-    f.write(slow_trace or "")
-print(f"  Sample trace ID: {slow_trace}")
-PYEOF
-
-SAMPLE_TRACE=$(cat /tmp/lab4_trace.txt 2>/dev/null || echo "")
-[[ -n "$SAMPLE_TRACE" ]] && agent variable set LAB4_SAMPLE_TRACE_ID "$SAMPLE_TRACE" 2>/dev/null || true
-
-log "Setup complete. Sample trace ID: ${SAMPLE_TRACE}"
+log ""
+log "Setup complete. Learner should explore real Claro data in the Elastic Serverless tab."
+exit 0

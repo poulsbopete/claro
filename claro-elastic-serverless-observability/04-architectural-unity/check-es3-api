@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Challenge 4 check: verify APM traces and correlated logs are present.
+# Challenge 4 check: verify real Claro OTel logs and traces are flowing.
 set -euo pipefail
 
 fail() { echo "❌ $*"; exit 1; }
@@ -18,29 +18,24 @@ else
   AUTH_HEADER="Authorization: Basic $(echo -n "${ES_USERNAME}:${ES_PASSWORD}" | base64)"
 fi
 
-# ── Trace count ───────────────────────────────────────────────────────────────
-TRACE_COUNT=$(curl -sk "${ES_URL}/lab4-apm-traces-*/_count" \
-  -H "$AUTH_HEADER" | python3 -c "import sys,json; print(json.load(sys.stdin).get('count',0))")
+# ── Check real Claro OTel logs are flowing ────────────────────────────────────
+LOG_COUNT=$(curl -sk "${ES_URL}/logs.otel/_count" \
+  -H "$AUTH_HEADER" 2>/dev/null \
+  | python3 -c "import sys,json; print(json.load(sys.stdin).get('count',0))" 2>/dev/null || echo "0")
 
-[[ "$TRACE_COUNT" -ge 100 ]] || fail "Expected ≥100 APM trace documents, got ${TRACE_COUNT}. Check setup script logs."
-pass "APM traces indexed: ${TRACE_COUNT} documents"
+[[ "$LOG_COUNT" -ge 100 ]] || fail "Expected ≥100 OTel log documents in logs.otel, got ${LOG_COUNT}. Generators may still be starting — wait 1-2 minutes and try again."
+pass "Claro OTel logs flowing: ${LOG_COUNT} documents in logs.otel"
 
-# ── Log count ─────────────────────────────────────────────────────────────────
-LOG_COUNT=$(curl -sk "${ES_URL}/lab4-app-logs-*/_count" \
-  -H "$AUTH_HEADER" | python3 -c "import sys,json; print(json.load(sys.stdin).get('count',0))")
+# ── Check ERROR logs with trace.id (core of architectural unity demo) ─────────
+CORR_COUNT=$(curl -sk "${ES_URL}/logs.otel/_count" \
+  -H "$AUTH_HEADER" \
+  -H "Content-Type: application/json" \
+  -d '{"query":{"bool":{"must":[{"term":{"severity_text":"ERROR"}},{"exists":{"field":"trace.id"}}]}}}' \
+  2>/dev/null \
+  | python3 -c "import sys,json; print(json.load(sys.stdin).get('count',0))" 2>/dev/null || echo "0")
 
-[[ "$LOG_COUNT" -ge 100 ]] || fail "Expected ≥100 app log documents, got ${LOG_COUNT}."
-pass "App logs indexed: ${LOG_COUNT} documents"
-
-# ── Correlation: at least one error trace has a matching log ──────────────────
-SAMPLE=$(agent variable get LAB4_SAMPLE_TRACE_ID 2>/dev/null || echo "")
-
-if [[ -n "$SAMPLE" ]]; then
-  CORR=$(curl -sk "${ES_URL}/lab4-app-logs-*/_count?q=trace.id:${SAMPLE}" \
-    -H "$AUTH_HEADER" | python3 -c "import sys,json; print(json.load(sys.stdin).get('count',0))")
-  [[ "$CORR" -ge 1 ]] || fail "No log found for sample trace ID ${SAMPLE} — correlation broken."
-  pass "Trace→Log correlation verified (trace.id: ${SAMPLE:0:12}…)"
-fi
+[[ "$CORR_COUNT" -ge 1 ]] || fail "No ERROR logs with trace.id found — correlation data not yet available. Wait 1-2 minutes and try again."
+pass "Trace-correlated ERROR logs found: ${CORR_COUNT} logs with trace.id"
 
 echo ""
 echo "🎉 Lab 4 complete! Elastic's single datastore enables instant trace-to-log correlation."
