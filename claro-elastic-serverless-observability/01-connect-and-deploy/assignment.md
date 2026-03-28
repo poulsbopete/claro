@@ -11,11 +11,11 @@ notes:
     ## Lab 1 — Connect to Elastic Cloud & Deploy
 
     **What's happening right now:**
-    Your Elastic Cloud Serverless Observability project is being provisioned and the Fanatics Live demo platform is being configured with your credentials.
+    Your Elastic Cloud Serverless Observability project is being provisioned and the Claro NOC demo platform is being configured with your credentials.
 
     **By the end of this challenge you will:**
 
-    - ✅ Confirm the Fanatics Live scenario is deployed and sending telemetry
+    - ✅ Confirm the Claro scenario is deployed and sending live telemetry
     - ✅ Open your Elastic Serverless project — no login required
     - ✅ Verify logs, metrics, and traces are flowing from 9 microservices
     - ✅ Review the auto-provisioned AI agent, alert rules, and workflows
@@ -32,11 +32,11 @@ notes:
     | **Demo App** | Control panel — view service health, manage deployments, inject faults |
     | **Elastic Serverless** | Your Observability project — pre-logged in, data already flowing |
 
-    **The Fanatics Live scenario simulates 9 microservices across 3 clouds:**
+    **The Claro Network Operations Center scenario simulates 9 microservices across 3 clouds:**
 
-    - ☁️ **AWS** — Auction Engine, Card Printing, Payment Processing
-    - ☁️ **GCP** — Fan Engagement, Loyalty Rewards, Streaming CDN
-    - ☁️ **Azure** — Navigation, Fraud Detection, Fulfillment
+    - ☁️ **AWS** — Mobile Core (5G/4G AMF/SMF/UPF), Billing Engine (OCS/CDR), SMS Gateway (SMSC/SMPP)
+    - ☁️ **GCP** — Customer Portal (Mi Claro), Content Delivery (CDN/Claro TV), Network Analytics (DPI/Flink)
+    - ☁️ **Azure** — Voice Platform (IMS/SIP), IoT Connect (MQTT/PKI), NOC Dashboard (BGP/Alerts)
 
     Every service emits **real OpenTelemetry** logs, metrics, and traces — no synthetic data.
 - type: text
@@ -139,10 +139,10 @@ Use the three Demo App tabs to explore the running scenario:
 
 Click the **Elastic Serverless** tab — you're already logged in. Navigate to:
 
-- **Discover → ES|QL** — query live logs from `auction-engine`, `card-printing-system`, `digital-marketplace`, and more
-- **Applications → Service inventory** — distributed traces from 7 services
+- **Discover → ES|QL** — query live logs from `mobile-core`, `billing-engine`, `sms-gateway`, `customer-portal`, and more
+- **Applications → Service inventory** — distributed traces from 9 services
 - **Observability → Infrastructure** — 3 simulated hosts (AWS, GCP, Azure)
-- **Observability → SLOs** — 21 auto-created SLOs, one per service per signal type
+- **Observability → SLOs** — 27 auto-created SLOs, one per service per signal type
 - **Observability → Workflows** — 4 pre-configured AI response workflows
 
 > **Tip:** Set the time range to **Last 15 minutes** to see the freshest data.

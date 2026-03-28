@@ -57,16 +57,16 @@ notes:
 
     | Category | Cloud | Example Faults |
     |----------|-------|---------------|
-    | **Network Core** | Azure | MAC flapping, BGP peer drop, spanning tree change |
-    | **Security** | Azure | Firewall session exhaustion, SSL cert expiry |
-    | **WiFi / Network Access** | GCP | AP disconnect storm, channel interference |
-    | **Network Services** | Azure | DNS failure, DHCP lease storm |
-    | **Commerce** | AWS | Bid latency spike, payment timeout, catalog sync failure |
-    | **Manufacturing** | AWS | Print queue overflow, QC rejection spike |
-    | **Logistics** | GCP | Label printer failure, warehouse scanner desync |
-    | **Cloud Ops** | GCP | Orphaned resource alert, VPN tunnel flapping |
+    | **Mobile Core** | AWS | 5G SA session failure, LTE X2 handover storm, DNS/NRF failure |
+    | **Billing & Charging** | AWS | CDR mediation backlog, OCS Diameter Gy failure, real-time fraud spike |
+    | **Messaging** | AWS | SMSC queue overflow, SMPP bind failures |
+    | **Digital Services** | GCP | Customer portal auth cascade, self-care API rate limit |
+    | **CDN & Video** | GCP | CDN cache purge storm, video transcoding pipeline stall |
+    | **Analytics** | GCP | Network analytics pipeline lag, DPI classification failure |
+    | **Voice & IoT** | Azure | SIP trunk saturation, IMS registration storm, MQTT broker overload |
+    | **Operations** | Azure | NOC alert storm, BGP route flap |
 
-    Start with **Channel 12 — Auction Bid Latency Spike** for the clearest end-to-end demo.
+    Start with **Channel 1 — 5G SA Core Session Failure** for the clearest end-to-end telecom demo.
 tabs:
 - id: tue0oby8caoi
   title: Demo App
@@ -118,7 +118,7 @@ Trigger a fault from the **Demo App**, then watch Elastic automatically investig
 1. Open the **Chaos Controller** tab
 2. Select any fault channel and click **Inject Fault**
 
-> **Recommended:** Start with **Channel 12 — Auction Bid Latency Spike** for the clearest end-to-end demo.
+> **Recommended:** Start with **Channel 1 — 5G SA Core Session Failure** for the clearest end-to-end telecom demo.
 
 While the fault propagates, run this query in **Elastic Serverless → Discover → ES|QL** to watch the error spike in real time:
 
@@ -138,7 +138,7 @@ FROM logs*
 
 In the **Elastic Serverless** tab, go to **Observability → Workflows**.
 
-Within 1–2 minutes of injecting the fault, the **Fanatics Collectibles Significant Event Notification** workflow will show a recent execution. Click it to see each step:
+Within 1–2 minutes of injecting the fault, the **Claro NOC Significant Event Notification** workflow will show a recent execution. Click it to see each step:
 
 - **count_errors** — ES|QL query counting recent errors from the affected service
 - **run_rca** — AI agent root-cause analysis
