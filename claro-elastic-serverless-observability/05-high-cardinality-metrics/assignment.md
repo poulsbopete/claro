@@ -159,9 +159,9 @@ This drops `kubernetes.pod.uid` **only from the mobile-core stream** — the bil
 
 ---
 
-## Step 5: Verify the Streams Are Live
+## Step 5: Verify in the Streams List
 
-Go back to the Streams list. You should now see:
+Go back to the Streams list. You should now see your child streams alongside `logs.otel`:
 
 | Stream | Purpose | Retention |
 |--------|---------|-----------|
@@ -169,7 +169,7 @@ Go back to the Streams list. You should now see:
 | `logs.otel.billing-engine` | OCS/CDR billing events | 7 days |
 | `logs.otel.mobile-core` | 5G/4G core events | 30 days |
 
-Run this in **Discover → ES|QL** to confirm data is routing correctly:
+Switch to the **Elastic Serverless** tab → **Discover → ES|QL** and confirm data is routing to the child streams:
 
 ```esql
 FROM logs.otel, logs.otel.*
@@ -178,7 +178,7 @@ FROM logs.otel, logs.otel.*
 | SORT log_count DESC
 ```
 
-You'll see logs split across the streams, with `billing-engine` and `mobile-core` showing their own `data_stream.dataset` values.
+You'll see `billing-engine` and `mobile-core` logs appearing under their own `data_stream.dataset` values — routed automatically, zero agent changes.
 
 ---
 
