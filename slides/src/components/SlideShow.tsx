@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { slides } from "@/data/slides";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { ElasticStats }  from "@/components/ElasticStats";
 import { TitleSlide }   from "@/components/slides/TitleSlide";
 import { ProblemSlide } from "@/components/slides/ProblemSlide";
 import { LabSlide }     from "@/components/slides/LabSlide";
@@ -81,7 +82,7 @@ export function SlideShow() {
             animate="center"
             exit="exit"
             transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
-            className="absolute inset-0 flex items-center justify-center pt-16 pb-20"
+            className="absolute inset-0 flex items-center justify-center pt-16 pb-36"
           >
             {renderSlide(slide)}
           </motion.div>
@@ -89,17 +90,20 @@ export function SlideShow() {
       </div>
 
       {/* Bottom bar */}
-      <div className="absolute bottom-0 left-0 right-0 z-30 px-6 pb-4">
+      <div className="absolute bottom-0 left-0 right-0 z-30 pb-3">
+        {/* Elastic by the Numbers infographic */}
+        <ElasticStats />
+
         {/* Progress bar */}
-        <div className="w-full h-px bg-white/10 mb-4 rounded-full overflow-hidden">
+        <div className="w-full h-px bg-white/10 my-2 overflow-hidden">
           <motion.div
-            className="h-full bg-gradient-to-r from-elastic-blue to-elastic-teal rounded-full"
+            className="h-full bg-gradient-to-r from-elastic-blue to-elastic-teal"
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.35 }}
           />
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between px-6">
           {/* Dot nav */}
           <div className="flex gap-2">
             {slides.map((s, i) => (
@@ -152,7 +156,7 @@ export function SlideShow() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ delay: 2 }}
-          className="absolute bottom-16 left-1/2 -translate-x-1/2 text-white/20 text-xs flex items-center gap-2"
+          className="absolute bottom-20 left-1/2 -translate-x-1/2 text-white/30 text-xs flex items-center gap-2"
         >
           <kbd className="px-1.5 py-0.5 rounded border border-white/10 bg-white/5 font-mono text-[10px]">←→</kbd>
           <span>or</span>

@@ -41,11 +41,11 @@ export function SummarySlide({ slide }: { slide: SlideData }) {
         <h2 className="text-4xl md:text-5xl font-bold text-white mb-3">
           {t(slide.title)}
         </h2>
-        <p className="text-white/50 text-lg">{t(slide.subtitle)}</p>
+        <p className="text-white text-lg">{t(slide.subtitle)}</p>
       </motion.div>
 
       {/* Win cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
         {(slide.points ?? []).map((point, i) => {
           const Icon = icons[i];
           return (
@@ -59,30 +59,11 @@ export function SummarySlide({ slide }: { slide: SlideData }) {
               <div className={`flex-shrink-0 mt-0.5 ${iconColors[i]}`}>
                 <Icon className="w-5 h-5" />
               </div>
-              <p className="text-white/75 text-sm leading-relaxed">{t(point)}</p>
+              <p className="text-white text-sm leading-relaxed">{t(point)}</p>
             </motion.div>
           );
         })}
       </div>
-
-      {/* CTA */}
-      {slide.cta && (
-        <motion.a
-          href="https://play.instruqt.com/elastic/tracks/claro-elastic-serverless-observability"
-          target="_blank"
-          rel="noopener noreferrer"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.7, duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl
-            bg-gradient-to-r from-elastic-blue to-elastic-teal
-            text-white font-bold text-lg shadow-lg shadow-elastic-blue/25
-            hover:-translate-y-0.5 hover:shadow-xl hover:shadow-elastic-blue/30
-            transition-all duration-300"
-        >
-          {t(slide.cta)}
-        </motion.a>
-      )}
     </div>
   );
 }

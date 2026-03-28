@@ -32,7 +32,7 @@ export function ProblemSlide({ slide }: { slide: SlideData }) {
         <h2 className="text-4xl md:text-5xl font-bold text-white mb-3">
           {t(slide.title)}
         </h2>
-        <p className="text-white/50 text-lg max-w-2xl mx-auto">
+        <p className="text-white text-lg max-w-2xl mx-auto">
           {t(slide.subtitle)}
         </p>
       </motion.div>
@@ -52,7 +52,7 @@ export function ProblemSlide({ slide }: { slide: SlideData }) {
               <div className="flex-shrink-0 mt-0.5">
                 <Icon className="w-5 h-5" />
               </div>
-              <p className="text-white/80 text-sm sm:text-base leading-relaxed">
+              <p className="text-white text-sm sm:text-base leading-relaxed">
                 {t(point)}
               </p>
             </motion.div>

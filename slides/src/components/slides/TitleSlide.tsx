@@ -24,7 +24,7 @@ export function TitleSlide({ slide }: { slide: SlideData }) {
             ),
           )}
         </div>
-        <span className="text-white/40 text-sm font-semibold tracking-widest uppercase">
+        <span className="text-white text-sm font-semibold tracking-widest uppercase">
           Elastic
         </span>
       </motion.div>
@@ -44,7 +44,7 @@ export function TitleSlide({ slide }: { slide: SlideData }) {
                   stiffness: 150,
                   damping: 25,
                 }}
-                className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70"
+                className="inline-block text-white"
               >
                 {letter}
               </motion.span>
@@ -58,34 +58,9 @@ export function TitleSlide({ slide }: { slide: SlideData }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.8, duration: 0.6 }}
-        className="text-lg sm:text-xl text-white/60 max-w-2xl mb-12 leading-relaxed"
+        className="text-lg sm:text-xl text-white max-w-2xl leading-relaxed"
       >
         {t(slide.subtitle)}
-      </motion.p>
-
-      {/* CTA */}
-      {slide.cta && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 1.1, duration: 0.5 }}
-          className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl
-            border border-elastic-blue/40 bg-elastic-blue/10 backdrop-blur
-            text-elastic-blue font-semibold text-lg hover:bg-elastic-blue/20
-            hover:-translate-y-0.5 transition-all duration-300 cursor-default"
-        >
-          {t(slide.cta)}
-        </motion.div>
-      )}
-
-      {/* Workshop URL */}
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.4, duration: 0.6 }}
-        className="mt-8 text-xs text-white/25 font-mono"
-      >
-        play.instruqt.com/elastic/tracks/claro-elastic-serverless-observability
       </motion.p>
     </div>
   );

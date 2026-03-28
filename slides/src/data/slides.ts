@@ -38,10 +38,6 @@ export const slides: SlideData[] = [
       en: "The Unified Platform Advantage — Four Labs, Four Architectural Wins",
       es: "La Ventaja de la Plataforma Unificada — Cuatro Labs, Cuatro Victorias Arquitectónicas",
     },
-    cta: {
-      en: "Start the Labs →",
-      es: "Comenzar los Labs →",
-    },
   },
 
   // ── Slide 2: The Problem ──────────────────────────────────────────────────
@@ -290,9 +286,5 @@ export const slides: SlideData[] = [
         es: "Operaciones Convergentes — detección SIEM en datos de observabilidad sin costo adicional de ingestión",
       },
     ],
-    cta: {
-      en: "Try the Instruqt Workshop →",
-      es: "Prueba el Workshop en Instruqt →",
-    },
   },
 ];

@@ -29,7 +29,7 @@ export function LabSlide({ slide }: { slide: SlideData }) {
           <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight mb-3">
             {t(slide.title)}
           </h2>
-          <p className="text-white/50 text-base leading-relaxed max-w-xl">
+          <p className="text-white text-base leading-relaxed max-w-xl">
             {t(slide.subtitle)}
           </p>
         </motion.div>
@@ -45,7 +45,7 @@ export function LabSlide({ slide }: { slide: SlideData }) {
             <div className="text-6xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-elastic-blue to-elastic-teal leading-none">
               {slide.metric.value}
             </div>
-            <div className="text-white/40 text-xs mt-1 max-w-[140px] leading-snug">
+            <div className="text-white text-xs mt-1 max-w-[140px] leading-snug">
               {t(slide.metric.label)}
             </div>
           </motion.div>
@@ -62,7 +62,7 @@ export function LabSlide({ slide }: { slide: SlideData }) {
         >
           {/* Table header */}
           <div className="grid grid-cols-[1fr_auto_auto] border-b border-white/10">
-            <div className="px-5 py-3 text-white/30 text-xs font-semibold uppercase tracking-wider">
+            <div className="px-5 py-3 text-white text-xs font-semibold uppercase tracking-wider">
               {t({ en: "Capability", es: "Capacidad" })}
             </div>
             <div className="px-5 py-3 text-elastic-teal text-xs font-bold uppercase tracking-wider text-center min-w-[140px]">
@@ -82,15 +82,15 @@ export function LabSlide({ slide }: { slide: SlideData }) {
               transition={{ delay: 0.4 + i * 0.08 }}
               className="grid grid-cols-[1fr_auto_auto] border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors"
             >
-              <div className="px-5 py-3.5 text-white/70 text-sm">
+              <div className="px-5 py-3.5 text-white text-sm">
                 {t(row.capability)}
               </div>
               <div className="px-5 py-3.5 text-elastic-teal text-sm text-center min-w-[140px] flex items-center justify-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 opacity-60" />
+                <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 opacity-70" />
                 <span className="text-xs">{row.elastic.replace("✅ ", "")}</span>
               </div>
               <div className="px-5 py-3.5 text-red-400/80 text-sm text-center min-w-[140px] flex items-center justify-center gap-1.5">
-                <XCircle className="w-3.5 h-3.5 flex-shrink-0 opacity-60" />
+                <XCircle className="w-3.5 h-3.5 flex-shrink-0 opacity-70" />
                 <span className="text-xs">{row.splunk.replace("❌ ", "")}</span>
               </div>
             </motion.div>
@@ -104,7 +104,7 @@ export function LabSlide({ slide }: { slide: SlideData }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          className="mt-4 text-white/25 text-xs font-mono text-center"
+          className="mt-4 text-white/70 text-xs font-mono text-center"
         >
           {t(slide.footer)}
         </motion.p>
