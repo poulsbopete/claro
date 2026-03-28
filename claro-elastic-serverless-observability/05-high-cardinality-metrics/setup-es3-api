@@ -1,0 +1,177 @@
+#!/usr/bin/env bash
+# Challenge 5 setup: High-Cardinality Kubernetes Metrics
+# Ingest a synthetic k8s cluster dataset demonstrating that Elastic's
+# GB-based pricing is immune to Splunk's MTS explosion problem.
+set -euo pipefail
+
+log()  { printf "[ch5-setup] %s\n" "$*"; }
+fail() { printf "[ch5-setup] ERROR: %s\n" "$*" >&2; exit 1; }
+
+ES_URL=$(agent variable get ES_URL 2>/dev/null || echo "")
+ES_API_KEY=$(agent variable get ES_API_KEY 2>/dev/null || echo "")
+ES_USERNAME=$(agent variable get ES_USERNAME 2>/dev/null || echo "admin")
+ES_PASSWORD=$(agent variable get ES_PASSWORD 2>/dev/null || echo "")
+
+[[ -z "$ES_URL" ]] && fail "ES_URL not set."
+if [[ -n "$ES_API_KEY" ]]; then
+  AUTH_HEADER="Authorization: ApiKey ${ES_API_KEY}"
+else
+  AUTH_HEADER="Authorization: Basic $(echo -n "${ES_USERNAME}:${ES_PASSWORD}" | base64)"
+fi
+
+es() {
+  local method="$1" path="$2" body="${3:-}"
+  if [[ -n "$body" ]]; then
+    curl -sk -X "$method" "${ES_URL}${path}" \
+      -H "$AUTH_HEADER" -H "Content-Type: application/json" -d "$body"
+  else
+    curl -sk -X "$method" "${ES_URL}${path}" -H "$AUTH_HEADER"
+  fi
+}
+
+# ── Index template ────────────────────────────────────────────────────────────
+log "Creating Kubernetes metrics index template..."
+es PUT "/_index_template/lab5-k8s-metrics" '{
+  "index_patterns": ["lab5-k8s-metrics-*"],
+  "template": {
+    "settings": {"number_of_shards": 1, "number_of_replicas": 0},
+    "mappings": {
+      "properties": {
+        "@timestamp":                        {"type":"date"},
+        "kubernetes.namespace":              {"type":"keyword"},
+        "kubernetes.node.name":              {"type":"keyword"},
+        "kubernetes.pod.uid":                {"type":"keyword"},
+        "kubernetes.pod.name":               {"type":"keyword"},
+        "kubernetes.container.name":         {"type":"keyword"},
+        "kubernetes.container.id":           {"type":"keyword"},
+        "kubernetes.deployment.name":        {"type":"keyword"},
+        "kubernetes.cluster.name":           {"type":"keyword"},
+        "kubernetes.pod.cpu.usage.nanocores":         {"type":"long"},
+        "kubernetes.pod.memory.rss.bytes":            {"type":"long"},
+        "kubernetes.pod.network.rx.bytes":            {"type":"long"},
+        "kubernetes.pod.network.tx.bytes":            {"type":"long"},
+        "kubernetes.container.cpu.limit.nanocores":   {"type":"long"},
+        "kubernetes.container.memory.limit.bytes":    {"type":"long"},
+        "kubernetes.container.status.restarts":       {"type":"integer"},
+        "kubernetes.container.status.ready":          {"type":"boolean"}
+      }
+    }
+  }
+}' | python3 -c "import sys,json; r=json.load(sys.stdin); print('  template:', r.get('acknowledged','?'))"
+
+# ── Generate metrics ──────────────────────────────────────────────────────────
+log "Generating high-cardinality Kubernetes metrics (50 nodes, 20 namespaces, ~200 deployments)..."
+
+python3 - <<'PYEOF'
+import json, random, uuid, requests, os
+from datetime import datetime, timedelta, timezone
+
+ES_URL     = os.environ.get("ES_URL","")
+ES_API_KEY = os.environ.get("ES_API_KEY","")
+ES_USER    = os.environ.get("ES_USERNAME","admin")
+ES_PASS    = os.environ.get("ES_PASSWORD","")
+
+headers = {"Content-Type": "application/json"}
+auth    = None
+if ES_API_KEY:
+    headers["Authorization"] = f"ApiKey {ES_API_KEY}"
+else:
+    from requests.auth import HTTPBasicAuth
+    auth = HTTPBasicAuth(ES_USER, ES_PASS)
+
+TODAY = datetime.now(timezone.utc)
+INDEX = f"lab5-k8s-metrics-{TODAY.strftime('%Y.%m.%d')}"
+
+CLUSTER = "prod-us-east-1"
+NODES   = [f"ip-10-0-{random.randint(1,255)}-{random.randint(1,254)}" for _ in range(50)]
+NS_APPS = ["frontend","backend","payments","auth","data","ml","monitoring",
+           "logging","tracing","infra","ci","staging","search","cache",
+           "messaging","gateway","reporting","analytics","security","tools"]
+NAMESPACES = [f"ns-{a}" for a in NS_APPS]
+
+DEPLOYMENTS = {}
+for ns in NAMESPACES:
+    count = random.randint(5, 12)
+    DEPLOYMENTS[ns] = [f"{ns}-svc{i}-v{random.randint(1,3)}" for i in range(count)]
+
+all_pod_uids = set()
+batch        = ""
+doc_count    = 0
+
+def flush(b):
+    r = requests.post(f"{ES_URL}/_bulk", data=b,
+                      headers={**headers,"Content-Type":"application/x-ndjson"},
+                      auth=auth, verify=False, timeout=90)
+    return r.json().get("errors", True)
+
+# 60 intervals × 30s = last 30 minutes of data
+for interval in range(60):
+    ts = TODAY - timedelta(seconds=interval * 30)
+    ts_str = ts.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+
+    for ns, deployments in DEPLOYMENTS.items():
+        for dep in deployments:
+            for replica in range(random.randint(2, 6)):
+                pod_uid  = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{dep}-{replica}-{ns}"))
+                pod_name = f"{dep}-{uuid.uuid4().hex[:8]}-{uuid.uuid4().hex[:5]}"
+                node     = random.choice(NODES)
+                all_pod_uids.add(pod_uid)
+
+                cpu_limit = random.choice([500_000_000, 1_000_000_000, 2_000_000_000])
+                mem_limit = random.choice([536_870_912, 1_073_741_824, 2_147_483_648])
+                cid       = f"containerd://{uuid.uuid4().hex}"
+                cname     = dep.split("-")[1] if len(dep.split("-")) > 1 else "app"
+
+                doc = {
+                    "@timestamp":                            ts_str,
+                    "kubernetes.cluster.name":               CLUSTER,
+                    "kubernetes.namespace":                  ns,
+                    "kubernetes.node.name":                  node,
+                    "kubernetes.pod.uid":                    pod_uid,
+                    "kubernetes.pod.name":                   pod_name,
+                    "kubernetes.container.name":             cname,
+                    "kubernetes.container.id":               cid,
+                    "kubernetes.deployment.name":            dep,
+                    "kubernetes.pod.cpu.usage.nanocores":    random.randint(10_000_000, cpu_limit),
+                    "kubernetes.pod.memory.rss.bytes":       random.randint(52_428_800, mem_limit),
+                    "kubernetes.pod.network.rx.bytes":       random.randint(1_000, 50_000_000),
+                    "kubernetes.pod.network.tx.bytes":       random.randint(1_000, 20_000_000),
+                    "kubernetes.container.cpu.limit.nanocores":  cpu_limit,
+                    "kubernetes.container.memory.limit.bytes":   mem_limit,
+                    "kubernetes.container.status.restarts":      random.randint(0, 3),
+                    "kubernetes.container.status.ready":         random.random() > 0.02,
+                }
+                batch += json.dumps({"index":{"_index":INDEX}}) + "\n"
+                batch += json.dumps(doc) + "\n"
+                doc_count += 1
+
+                if doc_count % 500 == 0:
+                    errs = flush(batch)
+                    print(f"  Indexed {doc_count} docs (errors={errs})")
+                    batch = ""
+
+if batch:
+    flush(batch)
+
+mts = len(all_pod_uids) * 4
+print(f"\n  Total docs:           {doc_count}")
+print(f"  Unique pods (= MTS): {len(all_pod_uids)}")
+print(f"  Splunk MTS estimate: {mts:,}")
+PYEOF
+
+# Create Kibana data view (best-effort)
+log "Creating Kibana data view..."
+KIBANA_URL=$(agent variable get ES_KIBANA_URL 2>/dev/null || echo "")
+if [[ -n "$KIBANA_URL" ]]; then
+  if [[ -n "$ES_API_KEY" ]]; then
+    KB_AUTH="Authorization: ApiKey ${ES_API_KEY}"
+  else
+    KB_AUTH="Authorization: Basic $(echo -n "${ES_USERNAME}:${ES_PASSWORD}" | base64)"
+  fi
+  curl -sk -X POST "${KIBANA_URL}/api/data_views/data_view" \
+    -H "$KB_AUTH" -H "Content-Type: application/json" -H "kbn-xsrf: true" \
+    -d '{"data_view":{"name":"Lab 5 - Kubernetes Metrics","title":"lab5-k8s-metrics-*","timeFieldName":"@timestamp"},"override":true}' \
+    > /dev/null 2>&1 && log "Kibana data view created." || log "Kibana data view skipped (will auto-detect)."
+fi
+
+log "Challenge 5 setup complete."

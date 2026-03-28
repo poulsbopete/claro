@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Challenge 6 solve: auto-complete for facilitators / testing.
+set -euo pipefail
+log() { printf "[ch6-solve] %s\n" "$*"; }
+
+ES_URL=$(agent variable get ES_URL 2>/dev/null || echo "")
+ES_API_KEY=$(agent variable get ES_API_KEY 2>/dev/null || echo "")
+ES_USERNAME=$(agent variable get ES_USERNAME 2>/dev/null || echo "admin")
+ES_PASSWORD=$(agent variable get ES_PASSWORD 2>/dev/null || echo "")
+
+if [[ -n "$ES_API_KEY" ]]; then AUTH="Authorization: ApiKey ${ES_API_KEY}"
+else AUTH="Authorization: Basic $(echo -n "${ES_USERNAME}:${ES_PASSWORD}" | base64)"; fi
+
+COUNT=$(curl -sk "${ES_URL}/lab6-audit-logs-*/_count" \
+  -H "$AUTH" | python3 -c "import sys,json; print(json.load(sys.stdin).get('count',0))" 2>/dev/null || echo "0")
+
+log "Total audit log count: ${COUNT}"
+log "Solve complete."
