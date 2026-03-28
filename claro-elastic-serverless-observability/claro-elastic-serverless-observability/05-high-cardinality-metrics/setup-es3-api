@@ -1,177 +1,85 @@
 #!/usr/bin/env bash
-# Challenge 5 setup: High-Cardinality Kubernetes Metrics
-# Ingest a synthetic k8s cluster dataset demonstrating that Elastic's
-# GB-based pricing is immune to Splunk's MTS explosion problem.
+# Challenge 5 setup: Elastic Streams — demonstrate retention and processing rules
+# using the real logs.otel stream already flowing from the Claro generators.
 set -euo pipefail
 
 log()  { printf "[ch5-setup] %s\n" "$*"; }
-fail() { printf "[ch5-setup] ERROR: %s\n" "$*" >&2; exit 1; }
+warn() { printf "[ch5-setup] WARN: %s\n" "$*"; }
 
-ES_URL=$(agent variable get ES_URL 2>/dev/null || echo "")
+KIBANA_URL=$(agent variable get ES_KIBANA_URL 2>/dev/null || echo "")
 ES_API_KEY=$(agent variable get ES_API_KEY 2>/dev/null || echo "")
 ES_USERNAME=$(agent variable get ES_USERNAME 2>/dev/null || echo "admin")
 ES_PASSWORD=$(agent variable get ES_PASSWORD 2>/dev/null || echo "")
 
-[[ -z "$ES_URL" ]] && fail "ES_URL not set."
+[[ -z "$KIBANA_URL" ]] && { warn "KIBANA_URL not set — skipping Streams API setup."; exit 0; }
+
 if [[ -n "$ES_API_KEY" ]]; then
-  AUTH_HEADER="Authorization: ApiKey ${ES_API_KEY}"
+  KB_AUTH="Authorization: ApiKey ${ES_API_KEY}"
 else
-  AUTH_HEADER="Authorization: Basic $(echo -n "${ES_USERNAME}:${ES_PASSWORD}" | base64)"
+  KB_AUTH="Authorization: Basic $(echo -n "${ES_USERNAME}:${ES_PASSWORD}" | base64)"
 fi
 
-es() {
+kb() {
   local method="$1" path="$2" body="${3:-}"
   if [[ -n "$body" ]]; then
-    curl -sk -X "$method" "${ES_URL}${path}" \
-      -H "$AUTH_HEADER" -H "Content-Type: application/json" -d "$body"
+    curl -sk -X "$method" "${KIBANA_URL}${path}" \
+      -H "$KB_AUTH" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d "$body"
   else
-    curl -sk -X "$method" "${ES_URL}${path}" -H "$AUTH_HEADER"
+    curl -sk -X "$method" "${KIBANA_URL}${path}" \
+      -H "$KB_AUTH" -H "kbn-xsrf: true"
   fi
 }
 
-# ── Index template ────────────────────────────────────────────────────────────
-log "Creating Kubernetes metrics index template..."
-es PUT "/_index_template/lab5-k8s-metrics" '{
-  "index_patterns": ["lab5-k8s-metrics-*"],
-  "template": {
-    "settings": {"number_of_shards": 1, "number_of_replicas": 0},
-    "mappings": {
-      "properties": {
-        "@timestamp":                        {"type":"date"},
-        "kubernetes.namespace":              {"type":"keyword"},
-        "kubernetes.node.name":              {"type":"keyword"},
-        "kubernetes.pod.uid":                {"type":"keyword"},
-        "kubernetes.pod.name":               {"type":"keyword"},
-        "kubernetes.container.name":         {"type":"keyword"},
-        "kubernetes.container.id":           {"type":"keyword"},
-        "kubernetes.deployment.name":        {"type":"keyword"},
-        "kubernetes.cluster.name":           {"type":"keyword"},
-        "kubernetes.pod.cpu.usage.nanocores":         {"type":"long"},
-        "kubernetes.pod.memory.rss.bytes":            {"type":"long"},
-        "kubernetes.pod.network.rx.bytes":            {"type":"long"},
-        "kubernetes.pod.network.tx.bytes":            {"type":"long"},
-        "kubernetes.container.cpu.limit.nanocores":   {"type":"long"},
-        "kubernetes.container.memory.limit.bytes":    {"type":"long"},
-        "kubernetes.container.status.restarts":       {"type":"integer"},
-        "kubernetes.container.status.ready":          {"type":"boolean"}
+# Ensure Streams is enabled (already done in track setup, but idempotent)
+log "Ensuring Elastic Streams is enabled..."
+kb POST "/api/streams/_enable" '{}' > /dev/null 2>&1 || true
+
+# Add a processing rule to logs.otel: drop kubernetes.pod.uid from long-lived stream
+# This demonstrates the core Splunk-vs-Elastic narrative:
+# Elastic: drop high-cardinality fields at the stream level, not the agent level
+log "Adding drop_field processing rule for kubernetes.pod.uid on logs.otel..."
+RULE_RESP=$(kb PUT "/api/streams/logs.otel" "$(cat <<'EOF'
+{
+  "ingest": {
+    "lifecycle": { "dsl": { "data_retention": "7d" } },
+    "processing": [
+      {
+        "condition": { "field": "kubernetes.pod.uid", "operator": "exists" },
+        "processors": [
+          { "name": "drop_field", "field": "kubernetes.pod.uid" }
+        ]
       }
-    }
+    ],
+    "routing": []
   }
-}' | python3 -c "import sys,json; r=json.load(sys.stdin); print('  template:', r.get('acknowledged','?'))"
+}
+EOF
+)" 2>/dev/null || echo '{}')
 
-# ── Generate metrics ──────────────────────────────────────────────────────────
-log "Generating high-cardinality Kubernetes metrics (50 nodes, 20 namespaces, ~200 deployments)..."
-
-python3 - <<'PYEOF'
-import json, random, uuid, requests, os
-from datetime import datetime, timedelta, timezone
-
-ES_URL     = os.environ.get("ES_URL","")
-ES_API_KEY = os.environ.get("ES_API_KEY","")
-ES_USER    = os.environ.get("ES_USERNAME","admin")
-ES_PASS    = os.environ.get("ES_PASSWORD","")
-
-headers = {"Content-Type": "application/json"}
-auth    = None
-if ES_API_KEY:
-    headers["Authorization"] = f"ApiKey {ES_API_KEY}"
-else:
-    from requests.auth import HTTPBasicAuth
-    auth = HTTPBasicAuth(ES_USER, ES_PASS)
-
-TODAY = datetime.now(timezone.utc)
-INDEX = f"lab5-k8s-metrics-{TODAY.strftime('%Y.%m.%d')}"
-
-CLUSTER = "prod-us-east-1"
-NODES   = [f"ip-10-0-{random.randint(1,255)}-{random.randint(1,254)}" for _ in range(50)]
-NS_APPS = ["frontend","backend","payments","auth","data","ml","monitoring",
-           "logging","tracing","infra","ci","staging","search","cache",
-           "messaging","gateway","reporting","analytics","security","tools"]
-NAMESPACES = [f"ns-{a}" for a in NS_APPS]
-
-DEPLOYMENTS = {}
-for ns in NAMESPACES:
-    count = random.randint(5, 12)
-    DEPLOYMENTS[ns] = [f"{ns}-svc{i}-v{random.randint(1,3)}" for i in range(count)]
-
-all_pod_uids = set()
-batch        = ""
-doc_count    = 0
-
-def flush(b):
-    r = requests.post(f"{ES_URL}/_bulk", data=b,
-                      headers={**headers,"Content-Type":"application/x-ndjson"},
-                      auth=auth, verify=False, timeout=90)
-    return r.json().get("errors", True)
-
-# 60 intervals × 30s = last 30 minutes of data
-for interval in range(60):
-    ts = TODAY - timedelta(seconds=interval * 30)
-    ts_str = ts.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
-
-    for ns, deployments in DEPLOYMENTS.items():
-        for dep in deployments:
-            for replica in range(random.randint(2, 6)):
-                pod_uid  = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{dep}-{replica}-{ns}"))
-                pod_name = f"{dep}-{uuid.uuid4().hex[:8]}-{uuid.uuid4().hex[:5]}"
-                node     = random.choice(NODES)
-                all_pod_uids.add(pod_uid)
-
-                cpu_limit = random.choice([500_000_000, 1_000_000_000, 2_000_000_000])
-                mem_limit = random.choice([536_870_912, 1_073_741_824, 2_147_483_648])
-                cid       = f"containerd://{uuid.uuid4().hex}"
-                cname     = dep.split("-")[1] if len(dep.split("-")) > 1 else "app"
-
-                doc = {
-                    "@timestamp":                            ts_str,
-                    "kubernetes.cluster.name":               CLUSTER,
-                    "kubernetes.namespace":                  ns,
-                    "kubernetes.node.name":                  node,
-                    "kubernetes.pod.uid":                    pod_uid,
-                    "kubernetes.pod.name":                   pod_name,
-                    "kubernetes.container.name":             cname,
-                    "kubernetes.container.id":               cid,
-                    "kubernetes.deployment.name":            dep,
-                    "kubernetes.pod.cpu.usage.nanocores":    random.randint(10_000_000, cpu_limit),
-                    "kubernetes.pod.memory.rss.bytes":       random.randint(52_428_800, mem_limit),
-                    "kubernetes.pod.network.rx.bytes":       random.randint(1_000, 50_000_000),
-                    "kubernetes.pod.network.tx.bytes":       random.randint(1_000, 20_000_000),
-                    "kubernetes.container.cpu.limit.nanocores":  cpu_limit,
-                    "kubernetes.container.memory.limit.bytes":   mem_limit,
-                    "kubernetes.container.status.restarts":      random.randint(0, 3),
-                    "kubernetes.container.status.ready":         random.random() > 0.02,
-                }
-                batch += json.dumps({"index":{"_index":INDEX}}) + "\n"
-                batch += json.dumps(doc) + "\n"
-                doc_count += 1
-
-                if doc_count % 500 == 0:
-                    errs = flush(batch)
-                    print(f"  Indexed {doc_count} docs (errors={errs})")
-                    batch = ""
-
-if batch:
-    flush(batch)
-
-mts = len(all_pod_uids) * 4
-print(f"\n  Total docs:           {doc_count}")
-print(f"  Unique pods (= MTS): {len(all_pod_uids)}")
-print(f"  Splunk MTS estimate: {mts:,}")
-PYEOF
-
-# Create Kibana data view (best-effort)
-log "Creating Kibana data view..."
-KIBANA_URL=$(agent variable get ES_KIBANA_URL 2>/dev/null || echo "")
-if [[ -n "$KIBANA_URL" ]]; then
-  if [[ -n "$ES_API_KEY" ]]; then
-    KB_AUTH="Authorization: ApiKey ${ES_API_KEY}"
-  else
-    KB_AUTH="Authorization: Basic $(echo -n "${ES_USERNAME}:${ES_PASSWORD}" | base64)"
-  fi
-  curl -sk -X POST "${KIBANA_URL}/api/data_views/data_view" \
-    -H "$KB_AUTH" -H "Content-Type: application/json" -H "kbn-xsrf: true" \
-    -d '{"data_view":{"name":"Lab 5 - Kubernetes Metrics","title":"lab5-k8s-metrics-*","timeFieldName":"@timestamp"},"override":true}' \
-    > /dev/null 2>&1 && log "Kibana data view created." || log "Kibana data view skipped (will auto-detect)."
+if echo "$RULE_RESP" | python3 -c "import sys,json; r=json.load(sys.stdin); exit(0 if r.get('acknowledged') or r.get('name') else 1)" 2>/dev/null; then
+  log "  Processing rule added to logs.otel ✓"
+else
+  log "  Note: logs.otel update returned: $(echo "$RULE_RESP" | head -c 200)"
+  log "  Learner will add the processing rule manually via the Streams UI."
 fi
 
-log "Challenge 5 setup complete."
+# List current streams for reference
+log ""
+log "Current streams in project:"
+kb GET "/api/streams" 2>/dev/null \
+  | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    streams = data.get('streams', data if isinstance(data, list) else [])
+    for s in streams[:10]:
+        name = s.get('name', '?')
+        print(f'  {name}')
+except Exception as e:
+    print(f'  (could not parse: {e})')
+" 2>/dev/null || true
+
+log ""
+log "Lab 5 setup complete."
+log "Learner will explore the logs.otel stream in the Kibana Streams UI."
+exit 0

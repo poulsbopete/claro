@@ -1,49 +1,26 @@
 #!/usr/bin/env bash
-# Challenge 5 setup: Elastic Streams — Cardinality and Retention Control
-#
-# Creates two Elastic Streams via the Kibana Streams API:
-#   lab5-k8s-detailed  — 7-day retention, all fields (full pod/container cardinality)
-#   lab5-k8s-summary   — 90-day retention, drop_field processing rules remove
-#                        kubernetes.pod.uid and kubernetes.container.id
-#
-# Then ingests synthetic Kubernetes metrics into both streams so learners can
-# query the contrast and see the Splunk MTS cost equivalent.
+# Challenge 5 setup: Elastic Streams — demonstrate retention and processing rules
+# using the real logs.otel stream already flowing from the Claro generators.
 set -euo pipefail
 
 log()  { printf "[ch5-setup] %s\n" "$*"; }
 warn() { printf "[ch5-setup] WARN: %s\n" "$*"; }
-fail() { printf "[ch5-setup] ERROR: %s\n" "$*" >&2; exit 1; }
 
-ES_URL=$(agent variable get ES_URL 2>/dev/null || echo "")
+KIBANA_URL=$(agent variable get ES_KIBANA_URL 2>/dev/null || echo "")
 ES_API_KEY=$(agent variable get ES_API_KEY 2>/dev/null || echo "")
 ES_USERNAME=$(agent variable get ES_USERNAME 2>/dev/null || echo "admin")
 ES_PASSWORD=$(agent variable get ES_PASSWORD 2>/dev/null || echo "")
-KIBANA_URL=$(agent variable get ES_KIBANA_URL 2>/dev/null || echo "")
 
-[[ -z "$ES_URL" ]]     && fail "ES_URL not set — track setup may not have completed."
-[[ -z "$KIBANA_URL" ]] && warn "KIBANA_URL not set — Streams API calls will be skipped."
+[[ -z "$KIBANA_URL" ]] && { warn "KIBANA_URL not set — skipping Streams API setup."; exit 0; }
 
 if [[ -n "$ES_API_KEY" ]]; then
-  ES_AUTH="Authorization: ApiKey ${ES_API_KEY}"
   KB_AUTH="Authorization: ApiKey ${ES_API_KEY}"
 else
-  ES_AUTH="Authorization: Basic $(echo -n "${ES_USERNAME}:${ES_PASSWORD}" | base64)"
   KB_AUTH="Authorization: Basic $(echo -n "${ES_USERNAME}:${ES_PASSWORD}" | base64)"
 fi
 
-es() {
-  local method="$1" path="$2" body="${3:-}"
-  if [[ -n "$body" ]]; then
-    curl -sk -X "$method" "${ES_URL}${path}" \
-      -H "$ES_AUTH" -H "Content-Type: application/json" -d "$body"
-  else
-    curl -sk -X "$method" "${ES_URL}${path}" -H "$ES_AUTH"
-  fi
-}
-
 kb() {
   local method="$1" path="$2" body="${3:-}"
-  [[ -z "$KIBANA_URL" ]] && { log "Kibana unavailable — skipping: $method $path"; return 0; }
   if [[ -n "$body" ]]; then
     curl -sk -X "$method" "${KIBANA_URL}${path}" \
       -H "$KB_AUTH" -H "Content-Type: application/json" -H "kbn-xsrf: true" -d "$body"
@@ -53,69 +30,23 @@ kb() {
   fi
 }
 
-# ── 1. Enable Elastic Streams on the project ─────────────────────────────────
-log "Enabling Elastic Streams..."
-ENABLE_RESP=$(kb POST "/api/streams/_enable" '{}' 2>/dev/null || echo '{}')
-log "Streams enable response: $(echo "$ENABLE_RESP" | python3 -c "import sys,json; r=json.load(sys.stdin); print(r.get('acknowledged', r))" 2>/dev/null || echo "$ENABLE_RESP")"
+# Ensure Streams is enabled (already done in track setup, but idempotent)
+log "Ensuring Elastic Streams is enabled..."
+kb POST "/api/streams/_enable" '{}' > /dev/null 2>&1 || true
 
-sleep 3  # allow Streams to initialise
-
-# ── 2. Create the detailed stream (7-day retention, full cardinality) ─────────
-log "Creating lab5-k8s-detailed stream (7-day retention, full granularity)..."
-DETAILED_RESP=$(kb PUT "/api/streams/lab5-k8s-detailed" "$(cat <<'EOF'
+# Add a processing rule to logs.otel: drop kubernetes.pod.uid from long-lived stream
+# This demonstrates the core Splunk-vs-Elastic narrative:
+# Elastic: drop high-cardinality fields at the stream level, not the agent level
+log "Adding drop_field processing rule for kubernetes.pod.uid on logs.otel..."
+RULE_RESP=$(kb PUT "/api/streams/logs.otel" "$(cat <<'EOF'
 {
-  "description": "Lab 5: Full per-pod/container Kubernetes metrics — 7-day retention for incident triage",
   "ingest": {
-    "lifecycle": {
-      "dsl": {
-        "data_retention": "7d"
-      }
-    },
-    "processing": [],
-    "routing": []
-  }
-}
-EOF
-)" 2>/dev/null || echo '{}')
-log "Detailed stream: $(echo "$DETAILED_RESP" | python3 -c "import sys,json; r=json.load(sys.stdin); print(r.get('acknowledged', r.get('name', r)))" 2>/dev/null || echo "$DETAILED_RESP")"
-
-# ── 3. Create the summary stream (90-day retention, drop high-cardinality fields)
-log "Creating lab5-k8s-summary stream (90-day retention, drop_field processing rules)..."
-SUMMARY_RESP=$(kb PUT "/api/streams/lab5-k8s-summary" "$(cat <<'EOF'
-{
-  "description": "Lab 5: Aggregated Kubernetes metrics — 90-day retention, high-cardinality fields dropped",
-  "ingest": {
-    "lifecycle": {
-      "dsl": {
-        "data_retention": "90d"
-      }
-    },
+    "lifecycle": { "dsl": { "data_retention": "7d" } },
     "processing": [
       {
-        "condition": null,
+        "condition": { "field": "kubernetes.pod.uid", "operator": "exists" },
         "processors": [
-          {
-            "name": "drop_field",
-            "field": "kubernetes.pod.uid"
-          }
-        ]
-      },
-      {
-        "condition": null,
-        "processors": [
-          {
-            "name": "drop_field",
-            "field": "kubernetes.container.id"
-          }
-        ]
-      },
-      {
-        "condition": null,
-        "processors": [
-          {
-            "name": "drop_field",
-            "field": "kubernetes.pod.name"
-          }
+          { "name": "drop_field", "field": "kubernetes.pod.uid" }
         ]
       }
     ],
@@ -124,176 +55,31 @@ SUMMARY_RESP=$(kb PUT "/api/streams/lab5-k8s-summary" "$(cat <<'EOF'
 }
 EOF
 )" 2>/dev/null || echo '{}')
-log "Summary stream: $(echo "$SUMMARY_RESP" | python3 -c "import sys,json; r=json.load(sys.stdin); print(r.get('acknowledged', r.get('name', r)))" 2>/dev/null || echo "$SUMMARY_RESP")"
 
-# ── 4. Create index templates for the backing indices ─────────────────────────
-log "Creating index templates for k8s stream backing indices..."
-for stream in "lab5-k8s-detailed" "lab5-k8s-summary"; do
-  es PUT "/_index_template/${stream}" "$(cat <<EOF
-{
-  "index_patterns": ["${stream}-*", ".ds-${stream}-*"],
-  "template": {
-    "settings": {"number_of_shards": 1, "number_of_replicas": 0},
-    "mappings": {
-      "properties": {
-        "@timestamp":                        {"type":"date"},
-        "kubernetes.namespace":              {"type":"keyword"},
-        "kubernetes.node.name":              {"type":"keyword"},
-        "kubernetes.pod.uid":                {"type":"keyword"},
-        "kubernetes.pod.name":               {"type":"keyword"},
-        "kubernetes.container.name":         {"type":"keyword"},
-        "kubernetes.container.id":           {"type":"keyword"},
-        "kubernetes.deployment.name":        {"type":"keyword"},
-        "kubernetes.cluster.name":           {"type":"keyword"},
-        "kubernetes.pod.cpu.usage.nanocores":        {"type":"long"},
-        "kubernetes.pod.memory.rss.bytes":           {"type":"long"},
-        "kubernetes.pod.network.rx.bytes":           {"type":"long"},
-        "kubernetes.pod.network.tx.bytes":           {"type":"long"},
-        "kubernetes.container.cpu.limit.nanocores":  {"type":"long"},
-        "kubernetes.container.memory.limit.bytes":   {"type":"long"},
-        "kubernetes.container.status.restarts":      {"type":"integer"},
-        "kubernetes.container.status.ready":         {"type":"boolean"}
-      }
-    }
-  }
-}
-EOF
-)" | python3 -c "import sys,json; r=json.load(sys.stdin); print(f'  {\"$stream\"} template:', r.get('acknowledged','?'))" 2>/dev/null || true
-done
+if echo "$RULE_RESP" | python3 -c "import sys,json; r=json.load(sys.stdin); exit(0 if r.get('acknowledged') or r.get('name') else 1)" 2>/dev/null; then
+  log "  Processing rule added to logs.otel ✓"
+else
+  log "  Note: logs.otel update returned: $(echo "$RULE_RESP" | head -c 200)"
+  log "  Learner will add the processing rule manually via the Streams UI."
+fi
 
-# ── 5. Ingest synthetic Kubernetes metrics into both streams ──────────────────
-log "Generating synthetic Kubernetes metrics..."
-log "  Cluster: prod-us-east-1 | 50 nodes | 20 namespaces | ~200 deployments"
-
-python3 - <<'PYEOF'
-import json, random, uuid, requests, os
-from datetime import datetime, timedelta, timezone
-
-ES_URL     = os.environ.get("ES_URL","")
-ES_API_KEY = os.environ.get("ES_API_KEY","")
-ES_USER    = os.environ.get("ES_USERNAME","admin")
-ES_PASS    = os.environ.get("ES_PASSWORD","")
-
-headers = {"Content-Type": "application/json"}
-auth    = None
-if ES_API_KEY:
-    headers["Authorization"] = f"ApiKey {ES_API_KEY}"
-else:
-    from requests.auth import HTTPBasicAuth
-    auth = HTTPBasicAuth(ES_USER, ES_PASS)
-
-TODAY   = datetime.now(timezone.utc)
-CLUSTER = "prod-us-east-1"
-NODES   = [f"ip-10-0-{random.randint(1,255)}-{random.randint(1,254)}" for _ in range(50)]
-NS_APPS = ["frontend","backend","payments","auth","data","ml","monitoring",
-           "logging","tracing","infra","ci","staging","search","cache",
-           "messaging","gateway","reporting","analytics","security","tools"]
-NAMESPACES  = [f"ns-{a}" for a in NS_APPS]
-DEPLOYMENTS = {ns: [f"{ns}-svc{i}" for i in range(random.randint(5,12))]
-               for ns in NAMESPACES}
-
-all_pod_uids = set()
-
-def bulk_index(index, docs):
-    body = ""
-    for doc in docs:
-        body += json.dumps({"index":{"_index": index}}) + "\n"
-        body += json.dumps(doc) + "\n"
-    r = requests.post(f"{ES_URL}/_bulk", data=body,
-                      headers={**headers, "Content-Type":"application/x-ndjson"},
-                      auth=auth, verify=False, timeout=90)
-    return r.json().get("errors", True)
-
-detailed_today = f"lab5-k8s-detailed-{TODAY.strftime('%Y.%m.%d')}"
-summary_today  = f"lab5-k8s-summary-{TODAY.strftime('%Y.%m.%d')}"
-
-detailed_batch = []
-summary_batch  = []
-doc_count      = 0
-
-# 30 scrape intervals (last 15 minutes at 30s resolution)
-for interval in range(30):
-    ts = TODAY - timedelta(seconds=interval * 30)
-    ts_str = ts.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
-
-    for ns, deployments in DEPLOYMENTS.items():
-        for dep in deployments:
-            for replica in range(random.randint(2, 5)):
-                pod_uid  = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{dep}-{replica}-{ns}"))
-                pod_name = f"{dep}-{uuid.uuid4().hex[:8]}"
-                node     = random.choice(NODES)
-                cid      = f"containerd://{uuid.uuid4().hex}"
-                cname    = dep.split("-")[1] if "-" in dep else "app"
-                cpu_lim  = random.choice([500_000_000, 1_000_000_000, 2_000_000_000])
-                mem_lim  = random.choice([536_870_912, 1_073_741_824, 2_147_483_648])
-                all_pod_uids.add(pod_uid)
-
-                doc = {
-                    "@timestamp":                            ts_str,
-                    "kubernetes.cluster.name":               CLUSTER,
-                    "kubernetes.namespace":                  ns,
-                    "kubernetes.node.name":                  node,
-                    "kubernetes.pod.uid":                    pod_uid,
-                    "kubernetes.pod.name":                   pod_name,
-                    "kubernetes.container.name":             cname,
-                    "kubernetes.container.id":               cid,
-                    "kubernetes.deployment.name":            dep,
-                    "kubernetes.pod.cpu.usage.nanocores":    random.randint(10_000_000, cpu_lim),
-                    "kubernetes.pod.memory.rss.bytes":       random.randint(52_428_800, mem_lim),
-                    "kubernetes.pod.network.rx.bytes":       random.randint(1_000, 50_000_000),
-                    "kubernetes.pod.network.tx.bytes":       random.randint(1_000, 20_000_000),
-                    "kubernetes.container.cpu.limit.nanocores":  cpu_lim,
-                    "kubernetes.container.memory.limit.bytes":   mem_lim,
-                    "kubernetes.container.status.restarts":      random.randint(0, 2),
-                    "kubernetes.container.status.ready":         random.random() > 0.02,
-                }
-                detailed_batch.append(doc)
-
-                # summary doc: drop high-cardinality fields to simulate the processing rule
-                summary_doc = {k: v for k, v in doc.items()
-                               if k not in ("kubernetes.pod.uid",
-                                            "kubernetes.container.id",
-                                            "kubernetes.pod.name")}
-                summary_batch.append(summary_doc)
-                doc_count += 1
-
-                if len(detailed_batch) >= 300:
-                    bulk_index(detailed_today, detailed_batch)
-                    bulk_index(summary_today,  summary_batch)
-                    print(f"  Indexed {doc_count} doc pairs...")
-                    detailed_batch, summary_batch = [], []
-
-if detailed_batch:
-    bulk_index(detailed_today, detailed_batch)
-    bulk_index(summary_today,  summary_batch)
-
-mts = len(all_pod_uids) * 4
-print(f"\n  Total metric samples:      {doc_count}")
-print(f"  Unique pods:               {len(all_pod_uids)}")
-print(f"  Splunk MTS equivalent:     {mts:,}")
-print(f"  Splunk monthly cost est.:  ${mts * 0.012 * 730:,.0f}")
-print(f"\n  Detailed index: {detailed_today}")
-print(f"  Summary index:  {summary_today}")
-print("Done.")
-PYEOF
-
-log "Creating Kibana data views..."
-for stream_name in "lab5-k8s-detailed" "lab5-k8s-summary"; do
-  kb POST "/api/data_views/data_view" "$(cat <<EOF
-{
-  "data_view": {
-    "name": "Lab 5 - ${stream_name}",
-    "title": "${stream_name}-*",
-    "timeFieldName": "@timestamp"
-  },
-  "override": true
-}
-EOF
-)" > /dev/null 2>&1 && log "  Data view: ${stream_name}" || true
-done
-
-log "Challenge 5 setup complete."
+# List current streams for reference
 log ""
-log "  Streams created:"
-log "    lab5-k8s-detailed  — 7-day retention, all fields including pod.uid + container.id"
-log "    lab5-k8s-summary   — 90-day retention, high-cardinality fields dropped"
+log "Current streams in project:"
+kb GET "/api/streams" 2>/dev/null \
+  | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    streams = data.get('streams', data if isinstance(data, list) else [])
+    for s in streams[:10]:
+        name = s.get('name', '?')
+        print(f'  {name}')
+except Exception as e:
+    print(f'  (could not parse: {e})')
+" 2>/dev/null || true
+
+log ""
+log "Lab 5 setup complete."
+log "Learner will explore the logs.otel stream in the Kibana Streams UI."
+exit 0

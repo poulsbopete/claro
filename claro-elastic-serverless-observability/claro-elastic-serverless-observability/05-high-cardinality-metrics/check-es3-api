@@ -1,37 +1,78 @@
 #!/usr/bin/env bash
-# Challenge 5 check: verify high-cardinality k8s metrics are present.
+# Challenge 5 check: verify Elastic Streams is enabled and logs.otel has data.
 set -euo pipefail
 
 fail() { echo "❌ $*"; exit 1; }
 pass() { echo "✅ $*"; }
+info() { echo "ℹ️  $*"; }
 
 ES_URL=$(agent variable get ES_URL 2>/dev/null || echo "")
 ES_API_KEY=$(agent variable get ES_API_KEY 2>/dev/null || echo "")
 ES_USERNAME=$(agent variable get ES_USERNAME 2>/dev/null || echo "admin")
 ES_PASSWORD=$(agent variable get ES_PASSWORD 2>/dev/null || echo "")
+KIBANA_URL=$(agent variable get ES_KIBANA_URL 2>/dev/null || echo "")
 
 [[ -z "$ES_URL" ]] && fail "ES_URL not set."
+
 if [[ -n "$ES_API_KEY" ]]; then
   AUTH="Authorization: ApiKey ${ES_API_KEY}"
+  KB_AUTH="Authorization: ApiKey ${ES_API_KEY}"
 else
   AUTH="Authorization: Basic $(echo -n "${ES_USERNAME}:${ES_PASSWORD}" | base64)"
+  KB_AUTH="Authorization: Basic $(echo -n "${ES_USERNAME}:${ES_PASSWORD}" | base64)"
 fi
 
-DOC_COUNT=$(curl -sk "${ES_URL}/lab5-k8s-metrics-*/_count" \
-  -H "$AUTH" | python3 -c "import sys,json; print(json.load(sys.stdin).get('count',0))")
+# ── logs.otel has real data ───────────────────────────────────────────────────
+LOG_COUNT=$(curl -sk "${ES_URL}/logs.otel/_count" \
+  -H "$AUTH" 2>/dev/null \
+  | python3 -c "import sys,json; print(json.load(sys.stdin).get('count',0))" 2>/dev/null || echo "0")
 
-[[ "$DOC_COUNT" -ge 1000 ]] || fail "Expected ≥1000 k8s metric documents, got ${DOC_COUNT}."
-pass "Kubernetes metrics indexed: ${DOC_COUNT} documents"
+[[ "$LOG_COUNT" -ge 50 ]] || fail "Expected ≥50 documents in logs.otel, got ${LOG_COUNT}. Generators may still be starting — wait 1-2 min and retry."
+pass "logs.otel has ${LOG_COUNT} documents (real Claro OTel data)"
 
-UNIQUE_PODS=$(curl -sk -X POST "${ES_URL}/lab5-k8s-metrics-*/_search" \
-  -H "$AUTH" -H "Content-Type: application/json" \
-  -d '{"size":0,"aggs":{"u":{"cardinality":{"field":"kubernetes.pod.uid"}}}}' \
-  | python3 -c "import sys,json; print(json.load(sys.stdin)['aggregations']['u']['value'])")
+# ── Streams API is accessible ─────────────────────────────────────────────────
+if [[ -n "$KIBANA_URL" ]]; then
+  STREAM_COUNT=$(curl -sk "${KIBANA_URL}/api/streams" \
+    -H "$KB_AUTH" -H "kbn-xsrf: true" 2>/dev/null \
+    | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    streams = data.get('streams', data if isinstance(data, list) else [])
+    print(len(streams))
+except:
+    print(0)
+" 2>/dev/null || echo "0")
 
-[[ "$UNIQUE_PODS" -ge 50 ]] || fail "Expected ≥50 unique pod UIDs (MTS equivalent), got ${UNIQUE_PODS}."
-pass "Unique pod UIDs: ${UNIQUE_PODS} (Splunk MTS equivalent: $((UNIQUE_PODS * 4)))"
+  if [[ "$STREAM_COUNT" -ge 1 ]]; then
+    pass "Kibana Streams API accessible — ${STREAM_COUNT} streams visible"
+  else
+    info "Streams API returned no results (non-blocking)"
+  fi
+
+  # Check if logs.otel has any processing rules configured
+  PROCESSING=$(curl -sk "${KIBANA_URL}/api/streams/logs.otel" \
+    -H "$KB_AUTH" -H "kbn-xsrf: true" 2>/dev/null \
+    | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    processing = data.get('ingest', {}).get('processing', [])
+    print(len(processing))
+except:
+    print(0)
+" 2>/dev/null || echo "0")
+
+  if [[ "$PROCESSING" -ge 1 ]]; then
+    pass "logs.otel has ${PROCESSING} processing rule(s) configured"
+  else
+    info "No processing rules on logs.otel yet — add one via Streams UI to complete the full demo (non-blocking)"
+  fi
+fi
 
 echo ""
-echo "🎉 Lab 5 complete! ${UNIQUE_PODS} unique pods × 4 metrics = $((UNIQUE_PODS * 4)) Splunk MTS."
-echo "   In Elastic: zero extra cost for cardinality. In Splunk: billed per MTS."
+echo "🎉 Lab 5 complete! Elastic Streams gives you in-platform retention and field-level"
+echo "   processing control — no agent changes, no collector restarts, no data loss."
+echo "   In Splunk, dropping kubernetes.pod.uid requires a global Collector config change"
+echo "   that removes the field from every destination permanently."
 exit 0

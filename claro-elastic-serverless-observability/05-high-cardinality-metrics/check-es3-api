@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# Challenge 5 check: verify Streams exist with correct retention and processing rules,
-# and that both backing indices have data.
+# Challenge 5 check: verify Elastic Streams is enabled and logs.otel has data.
 set -euo pipefail
 
 fail() { echo "❌ $*"; exit 1; }
@@ -14,6 +13,7 @@ ES_PASSWORD=$(agent variable get ES_PASSWORD 2>/dev/null || echo "")
 KIBANA_URL=$(agent variable get ES_KIBANA_URL 2>/dev/null || echo "")
 
 [[ -z "$ES_URL" ]] && fail "ES_URL not set."
+
 if [[ -n "$ES_API_KEY" ]]; then
   AUTH="Authorization: ApiKey ${ES_API_KEY}"
   KB_AUTH="Authorization: ApiKey ${ES_API_KEY}"
@@ -22,56 +22,57 @@ else
   KB_AUTH="Authorization: Basic $(echo -n "${ES_USERNAME}:${ES_PASSWORD}" | base64)"
 fi
 
-# ── Data in detailed stream ───────────────────────────────────────────────────
-DETAILED_COUNT=$(curl -sk "${ES_URL}/lab5-k8s-detailed-*/_count" \
-  -H "$AUTH" | python3 -c "import sys,json; print(json.load(sys.stdin).get('count',0))")
-[[ "$DETAILED_COUNT" -ge 100 ]] || fail "Expected ≥100 docs in lab5-k8s-detailed, got ${DETAILED_COUNT}."
-pass "Detailed stream documents: ${DETAILED_COUNT}"
+# ── logs.otel has real data ───────────────────────────────────────────────────
+LOG_COUNT=$(curl -sk "${ES_URL}/logs.otel/_count" \
+  -H "$AUTH" 2>/dev/null \
+  | python3 -c "import sys,json; print(json.load(sys.stdin).get('count',0))" 2>/dev/null || echo "0")
 
-# ── Data in summary stream ────────────────────────────────────────────────────
-SUMMARY_COUNT=$(curl -sk "${ES_URL}/lab5-k8s-summary-*/_count" \
-  -H "$AUTH" | python3 -c "import sys,json; print(json.load(sys.stdin).get('count',0))")
-[[ "$SUMMARY_COUNT" -ge 100 ]] || fail "Expected ≥100 docs in lab5-k8s-summary, got ${SUMMARY_COUNT}."
-pass "Summary stream documents: ${SUMMARY_COUNT}"
+[[ "$LOG_COUNT" -ge 50 ]] || fail "Expected ≥50 documents in logs.otel, got ${LOG_COUNT}. Generators may still be starting — wait 1-2 min and retry."
+pass "logs.otel has ${LOG_COUNT} documents (real Claro OTel data)"
 
-# ── Summary stream should NOT have pod.uid field ──────────────────────────────
-HAS_POD_UID=$(curl -sk -X POST "${ES_URL}/lab5-k8s-summary-*/_search" \
-  -H "$AUTH" -H "Content-Type: application/json" \
-  -d '{"size":0,"aggs":{"has_uid":{"filter":{"exists":{"field":"kubernetes.pod.uid"}}}}}' \
-  | python3 -c "import sys,json; print(json.load(sys.stdin)['aggregations']['has_uid']['doc_count'])")
-if [[ "$HAS_POD_UID" -eq 0 ]]; then
-  pass "Summary stream correctly has no kubernetes.pod.uid field (processing rule working)"
-else
-  info "Summary stream still contains pod.uid in ${HAS_POD_UID} docs (Stream processing rule may apply only to new ingest)"
-fi
-
-# ── Kibana Streams API check (best-effort) ────────────────────────────────────
+# ── Streams API is accessible ─────────────────────────────────────────────────
 if [[ -n "$KIBANA_URL" ]]; then
-  STREAM_LIST=$(curl -sk "${KIBANA_URL}/api/streams" \
-    -H "$KB_AUTH" | python3 -c "
+  STREAM_COUNT=$(curl -sk "${KIBANA_URL}/api/streams" \
+    -H "$KB_AUTH" -H "kbn-xsrf: true" 2>/dev/null \
+    | python3 -c "
 import sys, json
 try:
-    streams = json.load(sys.stdin).get('streams', [])
-    names = [s.get('name','') for s in streams if 'lab5' in s.get('name','')]
-    print(','.join(names))
-except: print('')
-" 2>/dev/null || echo "")
+    data = json.load(sys.stdin)
+    streams = data.get('streams', data if isinstance(data, list) else [])
+    print(len(streams))
+except:
+    print(0)
+" 2>/dev/null || echo "0")
 
-  if echo "$STREAM_LIST" | grep -q "lab5-k8s-detailed"; then
-    pass "Stream lab5-k8s-detailed exists in Kibana Streams"
+  if [[ "$STREAM_COUNT" -ge 1 ]]; then
+    pass "Kibana Streams API accessible — ${STREAM_COUNT} streams visible"
   else
-    info "Stream lab5-k8s-detailed not yet visible via Streams API (may take a moment)"
+    info "Streams API returned no results (non-blocking)"
   fi
 
-  if echo "$STREAM_LIST" | grep -q "lab5-k8s-summary"; then
-    pass "Stream lab5-k8s-summary exists in Kibana Streams"
+  # Check if logs.otel has any processing rules configured
+  PROCESSING=$(curl -sk "${KIBANA_URL}/api/streams/logs.otel" \
+    -H "$KB_AUTH" -H "kbn-xsrf: true" 2>/dev/null \
+    | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    processing = data.get('ingest', {}).get('processing', [])
+    print(len(processing))
+except:
+    print(0)
+" 2>/dev/null || echo "0")
+
+  if [[ "$PROCESSING" -ge 1 ]]; then
+    pass "logs.otel has ${PROCESSING} processing rule(s) configured"
   else
-    info "Stream lab5-k8s-summary not yet visible via Streams API (may take a moment)"
+    info "No processing rules on logs.otel yet — add one via Streams UI to complete the full demo (non-blocking)"
   fi
 fi
 
 echo ""
-echo "🎉 Lab 5 complete! Two streams, two retention policies, one ingest pipeline."
-echo "   Splunk requires agent-level changes to control cardinality — and you lose the data globally."
-echo "   Elastic Streams lets you keep it in one stream and summarise it in another."
+echo "🎉 Lab 5 complete! Elastic Streams gives you in-platform retention and field-level"
+echo "   processing control — no agent changes, no collector restarts, no data loss."
+echo "   In Splunk, dropping kubernetes.pod.uid requires a global Collector config change"
+echo "   that removes the field from every destination permanently."
 exit 0
