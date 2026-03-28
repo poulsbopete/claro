@@ -110,14 +110,14 @@ The setup script indexed 500 audit log events timestamped **2 years ago** and 10
 
 ## Step 1: Confirm Both Tiers Are Queryable Together
 
-Open the **Elastic Serverless** tab → **Discover → ES|QL**:
+Open the **Elastic Serverless** tab → **Discover → ES|QL**. Set the time range to **Last 3 years**, then run:
 
 ```esql
 FROM lab6-audit-logs-*
 | STATS doc_count = COUNT(),
         earliest  = MIN(@timestamp),
         latest    = MAX(@timestamp)
-  BY data.tier
+  BY tier
 | SORT earliest ASC
 ```
 
@@ -131,10 +131,10 @@ Run the exact query the compliance team needs — directly against two-year-old 
 
 ```esql
 FROM lab6-audit-logs-*
-| WHERE event.action IN ("data_export", "privilege_escalation_attempt")
-  AND destination.service == "payments-api"
-| KEEP @timestamp, user.name, user.id, event.action,
-       event.outcome, source.ip, compliance.framework
+| WHERE `event.action` IN ("data_export", "privilege_escalation_attempt")
+  AND `destination.service` == "payments-api"
+| KEEP @timestamp, `user.name`, `user.id`, `event.action`,
+       `event.outcome`, `source.ip`, `compliance.framework`
 | SORT @timestamp DESC
 ```
 
@@ -146,11 +146,11 @@ A cross-2-year compliance report in a single query — combining archival and re
 
 ```esql
 FROM lab6-audit-logs-*
-| WHERE event.action == "privilege_escalation_attempt"
+| WHERE `event.action` == "privilege_escalation_attempt"
 | STATS attempt_count  = COUNT(),
-        success_count  = COUNT() WHERE event.outcome == "success",
-        services_hit   = COUNT_DISTINCT(destination.service)
-  BY user.name
+        success_count  = COUNT() WHERE `event.outcome` == "success",
+        services_hit   = COUNT_DISTINCT(`destination.service`)
+  BY `user.name`
 | WHERE attempt_count > 0
 | SORT attempt_count DESC
 | LIMIT 20
@@ -160,9 +160,9 @@ FROM lab6-audit-logs-*
 
 ---
 
-## Step 4: Verify in Kibana
+## Step 4: Verify in Kibana Discover
 
-1. In **Elastic Serverless** → **Discover**, select the `Lab 6 - Audit Logs` data view
+1. In **Elastic Serverless** → **Discover**, click **Open** → select the `Lab 6 - Audit Logs` data view
 2. Set time range to **Last 3 years**
 3. Observe that documents from 2 years ago and today appear in the same timeline
 4. Add filter: `event.action : privilege_escalation_attempt`
@@ -173,6 +173,6 @@ All data — regardless of age — is immediately visible and filterable.
 
 ## ✅ Complete When:
 
-- [ ] The cross-tier query returns both `hot` and `frozen` tier documents in one result
+- [ ] The tier query returns both `hot` and `frozen` rows in a single result
 - [ ] The auditor query returns results for `data_export` / `privilege_escalation_attempt` on `payments-api`
 - [ ] You confirmed results came back in seconds — not after a rehydration queue

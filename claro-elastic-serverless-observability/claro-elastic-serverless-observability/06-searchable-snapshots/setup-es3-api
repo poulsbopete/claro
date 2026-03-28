@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Challenge 6 setup: Searchable Snapshots (Frozen Tier demo)
 # Ingest synthetic audit logs timestamped 2 years ago alongside recent logs.
-# Both are queryable on the same wildcard pattern — simulating frozen tier.
+# Uses only curl + python3 json/datetime (no requests library needed).
 set -euo pipefail
 
 log()  { printf "[ch6-setup] %s\n" "$*"; }
@@ -29,7 +29,7 @@ es() {
   fi
 }
 
-# ── Index template ────────────────────────────────────────────────────────────
+# ── Index template ─────────────────────────────────────────────────────────────
 log "Creating audit log index template..."
 es PUT "/_index_template/lab6-audit-logs" '{
   "index_patterns": ["lab6-audit-logs-*"],
@@ -37,135 +37,174 @@ es PUT "/_index_template/lab6-audit-logs" '{
     "settings": {"number_of_shards": 1, "number_of_replicas": 0},
     "mappings": {
       "properties": {
-        "@timestamp":           {"type":"date"},
-        "event.action":         {"type":"keyword"},
-        "event.category":       {"type":"keyword"},
-        "event.outcome":        {"type":"keyword"},
-        "user.name":            {"type":"keyword"},
-        "user.id":              {"type":"keyword"},
-        "user.roles":           {"type":"keyword"},
-        "source.ip":            {"type":"ip"},
-        "destination.service":  {"type":"keyword"},
+        "@timestamp":                {"type":"date"},
+        "event.action":              {"type":"keyword"},
+        "event.category":            {"type":"keyword"},
+        "event.outcome":             {"type":"keyword"},
+        "user.name":                 {"type":"keyword"},
+        "user.id":                   {"type":"keyword"},
+        "user.roles":                {"type":"keyword"},
+        "source.ip":                 {"type":"ip"},
+        "destination.service":       {"type":"keyword"},
         "http.response.status_code": {"type":"integer"},
-        "resource.type":        {"type":"keyword"},
-        "resource.id":          {"type":"keyword"},
-        "message":              {"type":"text"},
-        "data.tier":            {"type":"keyword"},
-        "compliance.framework": {"type":"keyword"}
+        "resource.type":             {"type":"keyword"},
+        "resource.id":               {"type":"keyword"},
+        "message":                   {"type":"text"},
+        "tier":                      {"type":"keyword"},
+        "compliance.framework":      {"type":"keyword"}
       }
     }
   }
 }' | python3 -c "import sys,json; r=json.load(sys.stdin); print('  template:', r.get('acknowledged','?'))"
 
-# ── Generate archival + recent audit logs ─────────────────────────────────────
-log "Generating archival audit logs (timestamped 2 years ago) + recent logs..."
+# ── Generate bulk NDJSON and index via curl ────────────────────────────────────
+log "Generating archival + recent audit logs..."
 
 python3 - <<'PYEOF'
-import json, random, uuid, requests, os
+import json, random, sys
 from datetime import datetime, timedelta, timezone
-
-ES_URL     = os.environ.get("ES_URL","")
-ES_API_KEY = os.environ.get("ES_API_KEY","")
-ES_USER    = os.environ.get("ES_USERNAME","admin")
-ES_PASS    = os.environ.get("ES_PASSWORD","")
-
-headers = {"Content-Type": "application/json"}
-auth    = None
-if ES_API_KEY:
-    headers["Authorization"] = f"ApiKey {ES_API_KEY}"
-else:
-    from requests.auth import HTTPBasicAuth
-    auth = HTTPBasicAuth(ES_USER, ES_PASS)
 
 NOW       = datetime.now(timezone.utc)
 BASE_DATE = NOW - timedelta(days=730)
 
-ARCH_INDEX = f"lab6-audit-logs-{BASE_DATE.strftime('%Y.%m.%d')}"
-HOT_INDEX  = f"lab6-audit-logs-{NOW.strftime('%Y.%m.%d')}"
+ARCH_DATE = BASE_DATE.strftime('%Y.%m.%d')
+HOT_DATE  = NOW.strftime('%Y.%m.%d')
 
-USERS     = [f"user_{uuid.uuid4().hex[:6]}" for _ in range(40)]
-SERVICES  = ["payments-api","user-mgmt","reporting","data-export","admin-portal"]
-ACTIONS   = ["login","logout","data_access","configuration_change","data_export",
-             "privilege_escalation_attempt","bulk_delete","schema_change","api_key_created"]
-FRAMEWORKS= ["SOC2","PCI-DSS","HIPAA","ISO-27001"]
-IP_POOL   = [f"10.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(1,254)}"
-             for _ in range(80)]
+print(f"{ARCH_DATE}", file=sys.stderr)
+print(f"{HOT_DATE}", file=sys.stderr)
 
-def bulk_index(index, docs, tier):
-    body = ""
-    for doc in docs:
-        body += json.dumps({"index":{"_index":index}}) + "\n"
-        body += json.dumps(doc) + "\n"
-    r = requests.post(f"{ES_URL}/_bulk", data=body,
-                      headers={**headers,"Content-Type":"application/x-ndjson"},
-                      auth=auth, verify=False, timeout=60)
-    errs = r.json().get("errors", True)
-    print(f"  {tier} docs indexed: {len(docs)} (errors={errs})")
+USERS     = [f"user_{i:03d}" for i in range(1, 41)]
+SERVICES  = ["payments-api", "user-mgmt", "reporting", "data-export", "admin-portal"]
+ACTIONS   = ["login", "logout", "data_access", "configuration_change", "data_export",
+             "privilege_escalation_attempt", "bulk_delete", "schema_change", "api_key_created"]
+FRAMEWORKS= ["SOC2", "PCI-DSS", "HIPAA", "ISO-27001"]
+ROLES     = ["readonly", "analyst", "admin", "superuser"]
 
-arch_docs = []
-for i in range(500):
-    ts      = BASE_DATE + timedelta(days=random.randint(0,6),
-                                    hours=random.randint(0,23),
-                                    minutes=random.randint(0,59))
+def make_doc(ts, tier):
     action  = random.choice(ACTIONS)
     user    = random.choice(USERS)
     svc     = random.choice(SERVICES)
     outcome = "failure" if action == "privilege_escalation_attempt" else random.choice(["success","success","failure"])
-    arch_docs.append({
+    return {
         "@timestamp":                ts.strftime("%Y-%m-%dT%H:%M:%S.000Z"),
         "event.action":              action,
         "event.category":            "authentication" if "login" in action else "database",
         "event.outcome":             outcome,
         "user.name":                 user,
-        "user.id":                   uuid.uuid5(uuid.NAMESPACE_DNS, user).hex[:12],
-        "user.roles":                [random.choice(["readonly","analyst","admin","superuser"])],
-        "source.ip":                 random.choice(IP_POOL),
+        "user.id":                   f"uid-{abs(hash(user)) % 100000:05d}",
+        "user.roles":                random.choice(ROLES),
+        "source.ip":                 f"10.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(1,254)}",
         "destination.service":       svc,
-        "http.response.status_code": 200 if outcome == "success" else random.choice([401,403,500]),
+        "http.response.status_code": 200 if outcome == "success" else random.choice([401, 403, 500]),
         "resource.type":             random.choice(["customer_record","payment_data","config","api_key"]),
-        "resource.id":               uuid.uuid4().hex[:16],
+        "resource.id":               f"res-{random.randint(10000,99999)}",
         "message":                   f"User {user} performed {action} on {svc} — outcome: {outcome}",
-        "data.tier":                 "frozen",
+        "tier":                      tier,
         "compliance.framework":      random.choice(FRAMEWORKS)
-    })
+    }
 
-hot_docs = []
+lines = []
+
+# 500 archival docs (2 years ago)
+arch_index = f"lab6-audit-logs-{ARCH_DATE}"
+for i in range(500):
+    ts = BASE_DATE + timedelta(days=random.randint(0,6), hours=random.randint(0,23), minutes=random.randint(0,59))
+    lines.append(json.dumps({"index": {"_index": arch_index}}))
+    lines.append(json.dumps(make_doc(ts, "frozen")))
+
+# 100 recent docs (last 48h)
+hot_index = f"lab6-audit-logs-{HOT_DATE}"
 for i in range(100):
-    ts     = NOW - timedelta(hours=random.randint(0, 48))
-    action = random.choice(ACTIONS)
-    user   = random.choice(USERS)
-    svc    = random.choice(SERVICES)
-    hot_docs.append({
-        "@timestamp":          ts.strftime("%Y-%m-%dT%H:%M:%S.000Z"),
-        "event.action":        action,
-        "event.category":      "authentication" if "login" in action else "database",
-        "event.outcome":       random.choice(["success","success","failure"]),
-        "user.name":           user,
-        "user.id":             uuid.uuid5(uuid.NAMESPACE_DNS, user).hex[:12],
-        "user.roles":          [random.choice(["readonly","analyst","admin"])],
-        "source.ip":           random.choice(IP_POOL),
-        "destination.service": svc,
-        "message":             f"User {user} performed {action} on {svc}",
-        "data.tier":           "hot",
-        "compliance.framework": random.choice(FRAMEWORKS)
-    })
+    ts = NOW - timedelta(hours=random.randint(0, 48))
+    lines.append(json.dumps({"index": {"_index": hot_index}}))
+    lines.append(json.dumps(make_doc(ts, "hot")))
 
-bulk_index(ARCH_INDEX, arch_docs, "archival (frozen)")
-bulk_index(HOT_INDEX,  hot_docs,  "recent (hot)")
-
-with open("/tmp/lab6_meta.txt","w") as f:
-    f.write(f"{ARCH_INDEX}\n{HOT_INDEX}\n")
-print("Done.")
+print("\n".join(lines))
 PYEOF
 
-# Save index names as agent variables
+# Capture index names from stderr and bulk NDJSON from stdout
+log "Bulk indexing via curl..."
+BULK_NDJSON=$(python3 - 2>/tmp/lab6_dates.txt <<'PYEOF'
+import json, random, sys
+from datetime import datetime, timedelta, timezone
+
+NOW       = datetime.now(timezone.utc)
+BASE_DATE = NOW - timedelta(days=730)
+
+ARCH_DATE = BASE_DATE.strftime('%Y.%m.%d')
+HOT_DATE  = NOW.strftime('%Y.%m.%d')
+
+# Write index names to a temp file
+with open("/tmp/lab6_meta.txt","w") as f:
+    f.write(f"lab6-audit-logs-{ARCH_DATE}\nlab6-audit-logs-{HOT_DATE}\n")
+
+USERS     = [f"user_{i:03d}" for i in range(1, 41)]
+SERVICES  = ["payments-api", "user-mgmt", "reporting", "data-export", "admin-portal"]
+ACTIONS   = ["login", "logout", "data_access", "configuration_change", "data_export",
+             "privilege_escalation_attempt", "bulk_delete", "schema_change", "api_key_created"]
+FRAMEWORKS= ["SOC2", "PCI-DSS", "HIPAA", "ISO-27001"]
+ROLES     = ["readonly", "analyst", "admin", "superuser"]
+
+def make_doc(ts, tier):
+    action  = random.choice(ACTIONS)
+    user    = random.choice(USERS)
+    svc     = random.choice(SERVICES)
+    outcome = "failure" if action == "privilege_escalation_attempt" else random.choice(["success","success","failure"])
+    return {
+        "@timestamp":                ts.strftime("%Y-%m-%dT%H:%M:%S.000Z"),
+        "event.action":              action,
+        "event.category":            "authentication" if "login" in action else "database",
+        "event.outcome":             outcome,
+        "user.name":                 user,
+        "user.id":                   f"uid-{abs(hash(user)) % 100000:05d}",
+        "user.roles":                random.choice(ROLES),
+        "source.ip":                 f"10.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(1,254)}",
+        "destination.service":       svc,
+        "http.response.status_code": 200 if outcome == "success" else random.choice([401, 403, 500]),
+        "resource.type":             random.choice(["customer_record","payment_data","config","api_key"]),
+        "resource.id":               f"res-{random.randint(10000,99999)}",
+        "message":                   f"User {user} performed {action} on {svc} — outcome: {outcome}",
+        "tier":                      tier,
+        "compliance.framework":      random.choice(FRAMEWORKS)
+    }
+
+lines = []
+arch_index = f"lab6-audit-logs-{ARCH_DATE}"
+for i in range(500):
+    ts = NOW - timedelta(days=730) + timedelta(days=random.randint(0,6), hours=random.randint(0,23), minutes=random.randint(0,59))
+    lines.append(json.dumps({"index": {"_index": arch_index}}))
+    lines.append(json.dumps(make_doc(ts, "frozen")))
+
+hot_index = f"lab6-audit-logs-{HOT_DATE}"
+for i in range(100):
+    ts = NOW - timedelta(hours=random.randint(0, 48))
+    lines.append(json.dumps({"index": {"_index": hot_index}}))
+    lines.append(json.dumps(make_doc(ts, "hot")))
+
+print("\n".join(lines))
+PYEOF
+)
+
+echo "$BULK_NDJSON" | curl -sk -X POST "${ES_URL}/_bulk" \
+  -H "$AUTH_HEADER" \
+  -H "Content-Type: application/x-ndjson" \
+  --data-binary @- \
+  | python3 -c "
+import sys, json
+r = json.load(sys.stdin)
+errors = r.get('errors', True)
+items  = r.get('items', [])
+print(f'  Indexed {len(items)} docs (errors={errors})')
+"
+
+# ── Save index names as agent variables ───────────────────────────────────────
 META=$(cat /tmp/lab6_meta.txt 2>/dev/null || echo "")
 ARCH_INDEX=$(echo "$META" | head -1)
 HOT_INDEX=$(echo "$META" | tail -1)
 agent variable set LAB6_ARCH_INDEX "$ARCH_INDEX" 2>/dev/null || true
 agent variable set LAB6_HOT_INDEX  "$HOT_INDEX"  2>/dev/null || true
 
-# Kibana data view (best-effort)
+# ── Kibana data view (best-effort) ─────────────────────────────────────────────
 KIBANA_URL=$(agent variable get ES_KIBANA_URL 2>/dev/null || echo "")
 if [[ -n "$KIBANA_URL" ]]; then
   if [[ -n "$ES_API_KEY" ]]; then KB_AUTH="Authorization: ApiKey ${ES_API_KEY}"
@@ -176,4 +215,4 @@ if [[ -n "$KIBANA_URL" ]]; then
     > /dev/null 2>&1 && log "Kibana data view created." || log "Kibana data view skipped."
 fi
 
-log "Challenge 6 setup complete. Archive index: ${ARCH_INDEX}"
+log "Challenge 6 setup complete. Archival index: ${ARCH_INDEX:-unknown}"
