@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Challenge 6 check: verify archival + recent audit logs are present and cross-queryable.
+set -euo pipefail
+
+fail() { echo "❌ $*"; exit 1; }
+pass() { echo "✅ $*"; }
+
+ES_URL=$(agent variable get ES_URL 2>/dev/null || echo "")
+ES_API_KEY=$(agent variable get ES_API_KEY 2>/dev/null || echo "")
+ES_USERNAME=$(agent variable get ES_USERNAME 2>/dev/null || echo "admin")
+ES_PASSWORD=$(agent variable get ES_PASSWORD 2>/dev/null || echo "")
+
+[[ -z "$ES_URL" ]] && fail "ES_URL not set."
+if [[ -n "$ES_API_KEY" ]]; then
+  AUTH="Authorization: ApiKey ${ES_API_KEY}"
+else
+  AUTH="Authorization: Basic $(echo -n "${ES_USERNAME}:${ES_PASSWORD}" | base64)"
+fi
+
+TOTAL=$(curl -sk "${ES_URL}/lab6-audit-logs-*/_count" \
+  -H "$AUTH" | python3 -c "import sys,json; print(json.load(sys.stdin).get('count',0))")
+
+[[ "$TOTAL" -ge 400 ]] || fail "Expected ≥400 audit log documents (archival + hot), got ${TOTAL}."
+pass "Total audit log documents: ${TOTAL} (hot + archival queryable together)"
+
+ARCH_INDEX=$(agent variable get LAB6_ARCH_INDEX 2>/dev/null || echo "")
+if [[ -n "$ARCH_INDEX" ]]; then
+  ARCH_COUNT=$(curl -sk "${ES_URL}/${ARCH_INDEX}/_count" \
+    -H "$AUTH" | python3 -c "import sys,json; print(json.load(sys.stdin).get('count',0))")
+  [[ "$ARCH_COUNT" -ge 100 ]] || fail "Expected ≥100 archival docs in ${ARCH_INDEX}, got ${ARCH_COUNT}."
+  pass "Archival (frozen-tier simulation) docs: ${ARCH_COUNT} — queryable with zero rehydration"
+fi
+
+echo ""
+echo "🎉 Lab 6 complete! Two years of audit data queryable instantly."
+echo "   Splunk DDAA would require a rehydration job before any of this data was accessible."
+exit 0

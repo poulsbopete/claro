@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Challenge 5 check: verify high-cardinality k8s metrics are present.
+set -euo pipefail
+
+fail() { echo "❌ $*"; exit 1; }
+pass() { echo "✅ $*"; }
+
+ES_URL=$(agent variable get ES_URL 2>/dev/null || echo "")
+ES_API_KEY=$(agent variable get ES_API_KEY 2>/dev/null || echo "")
+ES_USERNAME=$(agent variable get ES_USERNAME 2>/dev/null || echo "admin")
+ES_PASSWORD=$(agent variable get ES_PASSWORD 2>/dev/null || echo "")
+
+[[ -z "$ES_URL" ]] && fail "ES_URL not set."
+if [[ -n "$ES_API_KEY" ]]; then
+  AUTH="Authorization: ApiKey ${ES_API_KEY}"
+else
+  AUTH="Authorization: Basic $(echo -n "${ES_USERNAME}:${ES_PASSWORD}" | base64)"
+fi
+
+DOC_COUNT=$(curl -sk "${ES_URL}/lab5-k8s-metrics-*/_count" \
+  -H "$AUTH" | python3 -c "import sys,json; print(json.load(sys.stdin).get('count',0))")
+
+[[ "$DOC_COUNT" -ge 1000 ]] || fail "Expected ≥1000 k8s metric documents, got ${DOC_COUNT}."
+pass "Kubernetes metrics indexed: ${DOC_COUNT} documents"
+
+UNIQUE_PODS=$(curl -sk -X POST "${ES_URL}/lab5-k8s-metrics-*/_search" \
+  -H "$AUTH" -H "Content-Type: application/json" \
+  -d '{"size":0,"aggs":{"u":{"cardinality":{"field":"kubernetes.pod.uid"}}}}' \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['aggregations']['u']['value'])")
+
+[[ "$UNIQUE_PODS" -ge 50 ]] || fail "Expected ≥50 unique pod UIDs (MTS equivalent), got ${UNIQUE_PODS}."
+pass "Unique pod UIDs: ${UNIQUE_PODS} (Splunk MTS equivalent: $((UNIQUE_PODS * 4)))"
+
+echo ""
+echo "🎉 Lab 5 complete! ${UNIQUE_PODS} unique pods × 4 metrics = $((UNIQUE_PODS * 4)) Splunk MTS."
+echo "   In Elastic: zero extra cost for cardinality. In Splunk: billed per MTS."
+exit 0

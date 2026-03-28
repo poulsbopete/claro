@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# Challenge 4 check: verify APM traces and correlated logs are present.
+set -euo pipefail
+
+fail() { echo "❌ $*"; exit 1; }
+pass() { echo "✅ $*"; }
+
+ES_URL=$(agent variable get ES_URL 2>/dev/null || echo "")
+ES_API_KEY=$(agent variable get ES_API_KEY 2>/dev/null || echo "")
+ES_USERNAME=$(agent variable get ES_USERNAME 2>/dev/null || echo "admin")
+ES_PASSWORD=$(agent variable get ES_PASSWORD 2>/dev/null || echo "")
+
+[[ -z "$ES_URL" ]] && fail "ES_URL not set — track setup may not have completed."
+
+if [[ -n "$ES_API_KEY" ]]; then
+  AUTH_HEADER="Authorization: ApiKey ${ES_API_KEY}"
+else
+  AUTH_HEADER="Authorization: Basic $(echo -n "${ES_USERNAME}:${ES_PASSWORD}" | base64)"
+fi
+
+# ── Trace count ───────────────────────────────────────────────────────────────
+TRACE_COUNT=$(curl -sk "${ES_URL}/lab4-apm-traces-*/_count" \
+  -H "$AUTH_HEADER" | python3 -c "import sys,json; print(json.load(sys.stdin).get('count',0))")
+
+[[ "$TRACE_COUNT" -ge 100 ]] || fail "Expected ≥100 APM trace documents, got ${TRACE_COUNT}. Check setup script logs."
+pass "APM traces indexed: ${TRACE_COUNT} documents"
+
+# ── Log count ─────────────────────────────────────────────────────────────────
+LOG_COUNT=$(curl -sk "${ES_URL}/lab4-app-logs-*/_count" \
+  -H "$AUTH_HEADER" | python3 -c "import sys,json; print(json.load(sys.stdin).get('count',0))")
+
+[[ "$LOG_COUNT" -ge 100 ]] || fail "Expected ≥100 app log documents, got ${LOG_COUNT}."
+pass "App logs indexed: ${LOG_COUNT} documents"
+
+# ── Correlation: at least one error trace has a matching log ──────────────────
+SAMPLE=$(agent variable get LAB4_SAMPLE_TRACE_ID 2>/dev/null || echo "")
+
+if [[ -n "$SAMPLE" ]]; then
+  CORR=$(curl -sk "${ES_URL}/lab4-app-logs-*/_count?q=trace.id:${SAMPLE}" \
+    -H "$AUTH_HEADER" | python3 -c "import sys,json; print(json.load(sys.stdin).get('count',0))")
+  [[ "$CORR" -ge 1 ]] || fail "No log found for sample trace ID ${SAMPLE} — correlation broken."
+  pass "Trace→Log correlation verified (trace.id: ${SAMPLE:0:12}…)"
+fi
+
+echo ""
+echo "🎉 Lab 4 complete! Elastic's single datastore enables instant trace-to-log correlation."
+echo "   In Splunk, this requires switching between two products and two query languages."
+exit 0
