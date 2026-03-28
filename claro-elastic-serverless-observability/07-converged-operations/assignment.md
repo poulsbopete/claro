@@ -8,6 +8,15 @@ teaser: Enable a security detection rule on logs you already ingested. No separa
 notes:
 - type: text
   contents: |
+    ## Workshop Slides
+
+    Follow along with the full presentation:
+
+    **[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**
+
+    *(Opens in a new tab)*
+- type: text
+  contents: |
     ## The Splunk Enterprise Security Tax
 
     To get SIEM detection on application logs in Splunk, you need:

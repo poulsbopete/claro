@@ -10,6 +10,15 @@ teaser: Use Elastic Streams to route high-cardinality Kubernetes metrics into ti
 notes:
 - type: text
   contents: |
+    ## Workshop Slides
+
+    Follow along with the full presentation:
+
+    **[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**
+
+    *(Opens in a new tab)*
+- type: text
+  contents: |
     ## How Splunk Forces a Cardinality Trade-off
 
     In Splunk Observability Cloud, every unique combination of metric name + dimension values is a billable **Metric Time Series (MTS)**. A Kubernetes pod metric with dimensions `pod.uid`, `container.id`, and `node.name` creates a new MTS for every pod restart, every rollout, every ephemeral container — regardless of whether that data is ever queried.

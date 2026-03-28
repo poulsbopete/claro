@@ -8,6 +8,15 @@ teaser: Navigate Elastic Serverless to see logs, distributed traces, and host me
 notes:
 - type: text
   contents: |
+    ## Workshop Slides
+
+    Follow along with the full presentation:
+
+    **[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**
+
+    *(Opens in a new tab)*
+- type: text
+  contents: |
     ## Lab 2 — Explore Live OpenTelemetry Data
 
     **By the end of this challenge you will:**

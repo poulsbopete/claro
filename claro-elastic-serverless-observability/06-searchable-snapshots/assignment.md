@@ -9,6 +9,15 @@ teaser: Query two-year-old audit logs stored in object storage instantly. No reh
 notes:
 - type: text
   contents: |
+    ## Workshop Slides
+
+    Follow along with the full presentation:
+
+    **[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**
+
+    *(Opens in a new tab)*
+- type: text
+  contents: |
     ## The Splunk DDAA Rehydration Problem
 
     Splunk's **Dynamic Data Active Archive (DDAA)** offloads aged data to Amazon S3 to reduce costs. The problem: **archived data is not searchable in place.** To query it, you must:

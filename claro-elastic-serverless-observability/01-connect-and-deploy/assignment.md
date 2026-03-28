@@ -8,6 +8,17 @@ teaser: Wire the demo platform to your Elastic Cloud project and launch 9 micros
 notes:
 - type: text
   contents: |
+    ## Workshop Slides
+
+    Follow along with the full presentation while the lab sets up:
+
+    **[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**
+
+    The slides cover all four competitive differentiators you'll explore in these labs — with bilingual English/Spanish support.
+
+    *(Opens in a new tab — come back here when setup completes)*
+- type: text
+  contents: |
     ## Lab 1 — Connect to Elastic Cloud & Deploy
 
     **What's happening right now:**

@@ -8,6 +8,15 @@ teaser: Use the incident simulator to inject a realistic multi-cloud fault and w
 notes:
 - type: text
   contents: |
+    ## Workshop Slides
+
+    Follow along with the full presentation:
+
+    **[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**
+
+    *(Opens in a new tab)*
+- type: text
+  contents: |
     ## Lab 3 — Inject a Fault and Watch Elastic Detect It
 
     **By the end of this challenge you will:**
