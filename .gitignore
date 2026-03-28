@@ -6,3 +6,5 @@ __pycache__/
 *.creds
 .tmp/
 /tmp/
+slides/node_modules
+slides/.next
