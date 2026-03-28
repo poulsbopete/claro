@@ -8,6 +8,15 @@ teaser: Pivot from an APM trace span to its correlated log line in one click —
 notes:
 - type: text
   contents: |
+    ## Workshop Slides
+
+    Follow along with the full presentation:
+
+    **[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**
+
+    *(Opens in a new tab)*
+- type: text
+  contents: |
     ## Why Splunk Forces Context Switches
 
     In Splunk, **logs live in Splunk Cloud** and **APM traces live in Splunk Observability Cloud** — two separate backends, two billing contracts, two query languages (SPL and SignalFlow).
@@ -73,53 +82,56 @@ enhanced_loading: null
 
 # Competitive Edge 1: Architectural Unity
 
-The setup script injected a **latency spike and error storm** into `checkout-service` by indexing synthetic APM traces and correlated log lines into your Elastic Cloud Serverless project. Every trace and its matching log share the same `trace.id` field.
+Nine Claro microservices are continuously generating **real** OpenTelemetry traces and logs — all flowing into the same Elasticsearch datastore. In this challenge you'll pivot from a live APM trace directly to its correlated log line without switching tools, tabs, or query languages.
 
 ---
 
-## Step 1: Find the Latency Spike With ES|QL
+## Step 1: Find High-Error Services with ES|QL
 
-Open the **Elastic Serverless** tab, navigate to **Discover → ES|QL**, and run:
+Open the **Elastic Serverless** tab → **Discover** → switch to **ES|QL** mode, and run:
 
 ```esql
-FROM lab4-apm-traces-*
-| WHERE @timestamp > NOW() - 30 minutes AND error == true
-| STATS avg_ms = AVG(span.duration.us) / 1000,
-        error_count = COUNT()
-  BY service.name
-| SORT avg_ms DESC
+FROM logs.otel, logs.otel.*
+| WHERE @timestamp > NOW() - 15 MINUTES
+| WHERE severity_text == "ERROR"
+| STATS errors = COUNT(*) BY service.name
+| SORT errors DESC
 | LIMIT 10
 ```
 
-> `checkout-service` will show dramatically higher latency and error count. This is your smoking gun.
+> You'll see all 9 Claro services ranked by error count. Services with active chaos faults will show dramatically higher numbers — but every service is emitting errors at a background rate, giving you real data to explore.
 
 ---
 
-## Step 2: Drill Into a Failing Trace
+## Step 2: Grab a Trace ID from a Failing Log
+
+Find an ERROR log that has a `trace.id` — this is the link that connects logs to traces:
 
 ```esql
-FROM lab4-apm-traces-*
-| WHERE service.name == "checkout-service" AND error == true
-| KEEP @timestamp, trace.id, span.duration.us, error.message
+FROM logs.otel, logs.otel.*
+| WHERE @timestamp > NOW() - 5 MINUTES
+| WHERE severity_text == "ERROR" AND trace.id IS NOT NULL
+| KEEP service.name, body.text, trace.id, @timestamp
 | SORT @timestamp DESC
-| LIMIT 1
+| LIMIT 5
 ```
 
-Copy the `trace.id` value from the result (32-character hex string).
+Copy the `trace.id` value from any row (a 32-character hex string like `4bf92f3577b34da6a3ce929d0e0e4736`).
 
 ---
 
-## Step 3: Pivot to the Correlated Log — The Elastic Way
+## Step 3: Pivot to All Correlated Logs — The Elastic Way
 
-Query the **application log index** with the same `trace.id`. Replace `<your-trace-id>` with the value from Step 2:
+Paste your `trace.id` into this query to see **every log line from that same request**, across all services involved:
 
 ```esql
-FROM lab4-app-logs-*
-| WHERE trace.id == "<your-trace-id>"
-| KEEP @timestamp, log.level, message, error.message
+FROM logs.otel, logs.otel.*
+| WHERE trace.id == "<paste-your-trace-id-here>"
+| KEEP @timestamp, service.name, severity_text, body.text
+| SORT @timestamp ASC
 ```
 
-> **In Splunk:** You are now on your second product, running a second search, in a different query language.
+> **In Splunk:** You are now on your second product (Splunk Cloud), running a second search in SPL, in a different browser tab, hoping the log retention window matches.
 >
 > **In Elastic:** Same ES|QL, same datastore, same session. **One platform. Zero context switching.**
 
@@ -127,14 +139,20 @@ FROM lab4-app-logs-*
 
 ## Step 4: See Native APM ↔ Log Correlation in Kibana
 
-1. In the **Elastic Serverless** tab go to **Applications → Services → checkout-service**
-2. Click any failing transaction → **Trace** tab → **Logs** tab
-3. Kibana automatically correlates the trace to its logs via the shared `trace.id` — no configuration required
+No query needed — Kibana does this automatically:
+
+1. In the **Elastic Serverless** tab go to **Applications → Service inventory**
+2. Click any service — for example **mobile-core** or **billing-engine**
+3. Click any **transaction** to open the trace waterfall
+4. Click the **Logs** tab at the top of the trace detail panel
+
+Kibana automatically shows every log line correlated to that trace via the shared `trace.id` field — no configuration, no copy-paste, no second product.
 
 ---
 
 ## ✅ Complete When:
 
-- [ ] The ES|QL spike query shows `checkout-service` with elevated latency and errors
-- [ ] You retrieved a correlated log line using a `trace.id` from the APM index
-- [ ] You observed the native APM → Logs correlation in Kibana (one click, no product switch)
+- [ ] Your ES|QL error query shows Claro services ranked by error rate
+- [ ] You retrieved a `trace.id` from a failing log entry
+- [ ] You queried all logs for that trace with a single ES|QL statement
+- [ ] You clicked the **Logs** tab inside an APM trace detail — one click, no product switch
