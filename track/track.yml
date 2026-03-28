@@ -1,0 +1,239 @@
+slug: claro-elastic-serverless-observability
+id: claro-elastic-serverless-observability
+icon: https://storage.googleapis.com/instruqt-frontend/img/tracks/default.png
+title: "Elastic Observability: The Unified Platform Advantage"
+teaser: >
+  Experience first-hand why engineering and SRE teams choose Elastic over
+  Splunk for large-scale observability — through four hands-on labs that
+  demonstrate architectural unity, cost-predictable scale, instant data access,
+  and converged security.
+description: |
+  ## Workshop Overview
+
+  This technical workshop is designed for **DevOps, SRE, and platform engineering** teams
+  evaluating Elastic as their primary observability and security platform.
+
+  Each lab targets a specific area where Elastic's architecture delivers a measurable
+  advantage over the Splunk ecosystem (Splunk Cloud + Splunk Observability Cloud + ITSI):
+
+  | Lab | Theme | Elastic Advantage |
+  |-----|-------|-------------------|
+  | 1 | Architectural Unity | One datastore, zero context-switching |
+  | 2 | High-Cardinality Metrics | Scale without per-MTS pricing penalties |
+  | 3 | Searchable Snapshots | Instant frozen-tier queries, no rehydration |
+  | 4 | Converged Operations | SIEM value from existing observability data |
+
+  ## Prerequisites
+
+  * Basic familiarity with Kubernetes and application observability concepts
+  * No prior Elastic experience required
+
+  ## Environment
+
+  Each participant receives a dedicated **Elastic Cloud Serverless** environment
+  (Observability project) pre-loaded with synthetic workloads.
+tags:
+  - elastic
+  - observability
+  - apm
+  - kubernetes
+  - siem
+  - sre
+  - competitive
+owner: elastic
+developers:
+  - psimkins@elastic.co
+show_timer: true
+timelimit: 10800
+
+sandbox:
+  containers:
+    - name: sandbox
+      image: ubuntu:22.04
+      shell: /bin/bash
+      resources:
+        requests:
+          cpu: "500m"
+          memory: "1Gi"
+        limits:
+          cpu: "2"
+          memory: "2Gi"
+      environment:
+        - name: ES_URL
+          value: "${ES_URL}"
+        - name: ES_API_KEY
+          value: "${ES_API_KEY}"
+        - name: KIBANA_URL
+          value: "${KIBANA_URL}"
+        - name: ELASTIC_PASSWORD
+          value: "${ELASTIC_PASSWORD}"
+
+challenges:
+  - slug: 01-architectural-unity
+    id: 01-architectural-unity
+    title: "Lab 1: Architectural Unity — One Platform, Zero Context Switches"
+    teaser: >
+      Pivot from an APM trace span to the exact correlated log line in seconds —
+      all within a single unified datastore and UI.
+    tabs:
+      - id: terminal
+        type: terminal
+        hostname: sandbox
+        title: Terminal
+      - id: kibana
+        type: service
+        hostname: sandbox
+        port: 5601
+        title: Kibana
+    difficulty: basic
+    timelimit: 2700
+    notes:
+      - type: text
+        contents: |
+          ## Lab 1: Architectural Unity
+
+          In Splunk, **logs live in Splunk Cloud** and **traces/metrics live in Splunk
+          Observability Cloud** — two separate backends, two separate UIs, two separate
+          billing contracts. Correlating a trace to a log requires manually copying
+          a trace ID and running a second search in a different product.
+
+          Elastic stores **all signals — logs, metrics, traces, profiles** — in a single
+          Elasticsearch datastore. The unified Kibana UI lets you pivot between signals
+          without leaving your flow state.
+
+          In this lab you will investigate a real latency spike using APM, then jump
+          directly to the correlated log line — in one click.
+    assignment: |
+      {{ file "01-architectural-unity/assignment.md" }}
+    lifecycle:
+      setup:
+        host: sandbox
+        path: 01-architectural-unity/setup-sandbox/setup.sh
+
+  - slug: 02-high-cardinality-metrics
+    id: 02-high-cardinality-metrics
+    title: "Lab 2: High-Cardinality Metrics — Scale Without the Bill Shock"
+    teaser: >
+      Ingest per-pod, per-container Kubernetes metrics with full granularity.
+      No MTS caps. No forced aggregation. No surprise invoices.
+    tabs:
+      - id: terminal
+        type: terminal
+        hostname: sandbox
+        title: Terminal
+      - id: kibana
+        type: service
+        hostname: sandbox
+        port: 5601
+        title: Kibana
+    difficulty: basic
+    timelimit: 2700
+    notes:
+      - type: text
+        contents: |
+          ## Lab 2: High-Cardinality Metrics
+
+          Splunk Observability Cloud prices on **Metric Time Series (MTS)** — every unique
+          combination of metric name + dimension values is a separate billable MTS.
+          In a Kubernetes environment with thousands of pods, the MTS count explodes,
+          forcing teams to **drop high-cardinality dimensions** (pod ID, container ID,
+          user ID) just to control costs.
+
+          Elastic stores metrics as **documents** in Elasticsearch, indexed under
+          resource-based pricing. Ingesting 10,000 unique pod metrics costs the same
+          per-GB as ingesting 10 — because there is no per-MTS charge.
+
+          In this lab you will ingest a synthetic high-cardinality Kubernetes metric
+          dataset and build a live visualization that Splunk customers are forced to
+          approximate with pre-aggregation.
+    assignment: |
+      {{ file "02-high-cardinality-metrics/assignment.md" }}
+    lifecycle:
+      setup:
+        host: sandbox
+        path: 02-high-cardinality-metrics/setup-sandbox/setup.sh
+
+  - slug: 03-searchable-snapshots
+    id: 03-searchable-snapshots
+    title: "Lab 3: Searchable Snapshots — Audit-Ready Archives, Zero Wait Time"
+    teaser: >
+      Query two-year-old logs stored on S3 instantly. No rehydration jobs.
+      No support tickets. No waiting overnight.
+    tabs:
+      - id: terminal
+        type: terminal
+        hostname: sandbox
+        title: Terminal
+      - id: kibana
+        type: service
+        hostname: sandbox
+        port: 5601
+        title: Kibana
+    difficulty: intermediate
+    timelimit: 2700
+    notes:
+      - type: text
+        contents: |
+          ## Lab 3: Searchable Snapshots
+
+          Splunk's **Dynamic Data Active Archive (DDAA)** archives older data to S3,
+          but makes it **non-searchable** until you trigger a "rehydration" job —
+          a process that can take **hours or days**, during which an auditor or
+          incident responder is blocked.
+
+          Elastic's **Frozen Tier with Searchable Snapshots** keeps data in object
+          storage (S3/GCS/Azure) but makes it **directly queryable** via Elasticsearch.
+          No copy-back, no rehydration queue, no support ticket required.
+
+          In this lab you will simulate a compliance audit requiring logs from 24+
+          months ago, and query the frozen tier directly — returning results in seconds.
+    assignment: |
+      {{ file "03-searchable-snapshots/assignment.md" }}
+    lifecycle:
+      setup:
+        host: sandbox
+        path: 03-searchable-snapshots/setup-sandbox/setup.sh
+
+  - slug: 04-converged-operations
+    id: 04-converged-operations
+    title: "Lab 4: Converged Operations — SIEM Value Without Double Ingest"
+    teaser: >
+      Enable a SIEM detection rule on logs you already ingested.
+      No separate Splunk ES license. No second ingest pipeline. Zero extra cost.
+    tabs:
+      - id: terminal
+        type: terminal
+        hostname: sandbox
+        title: Terminal
+      - id: kibana
+        type: service
+        hostname: sandbox
+        port: 5601
+        title: Kibana
+    difficulty: intermediate
+    timelimit: 2700
+    notes:
+      - type: text
+        contents: |
+          ## Lab 4: Converged Operations
+
+          **Splunk Enterprise Security** is a separate, heavy-duty product that requires
+          its own licensing, its own data models (CIM), and typically its own dedicated
+          deployment. To get SIEM coverage on your app logs in Splunk, you must
+          **ingest those logs twice** — once into Splunk Cloud for Observability, and
+          once into Splunk ES for security analysis.
+
+          In Elastic, **observability data is security data**. The same Elasticsearch
+          index that powers your APM dashboards and log explorer can be targeted
+          by Elastic Security detection rules, machine learning jobs, and alert actions
+          — no duplication, no second contract.
+
+          In this lab you will activate a pre-built security detection rule targeting
+          the application logs from Lab 1, and observe a security alert fire — all
+          without touching the ingest pipeline.
+    assignment: |
+      {{ file "04-converged-operations/assignment.md" }}
+    lifecycle:
+      setup:
+        host: sandbox
+        path: 04-converged-operations/setup-sandbox/setup.sh
