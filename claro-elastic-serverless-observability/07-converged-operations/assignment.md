@@ -86,8 +86,9 @@ enhanced_loading: null
 
 ## The Scenario
 
-The setup script injected a **brute-force attack pattern** into `lab4-app-logs-*` — the same observability index used in Challenge 1:
+The setup script injected a **brute-force attack pattern** into `lab7-attack-logs-*` — structured exactly like your Claro observability logs:
 
+- **50 normal service requests** (baseline traffic from `payments-api`, `billing-engine`, etc.)
 - **15 authentication failures** from IP `198.51.100.42` within 5 minutes
 - **1 successful login** at the end — the brute force succeeded
 - **Target user:** `admin` on `/api/auth/login`
@@ -101,14 +102,14 @@ A Kibana Security detection rule was pre-created targeting this index.
 Open the **Elastic Serverless** tab → **Discover → ES|QL**:
 
 ```esql
-FROM lab4-app-logs-*
-| WHERE source.ip == "198.51.100.42"
-| KEEP @timestamp, log.level, message, event.action, event.outcome,
-       http.response.status_code
+FROM lab7-attack-logs-*
+| WHERE `source.ip` == "198.51.100.42"
+| KEEP @timestamp, `log.level`, message, `event.action`, `event.outcome`,
+       `http.response.status_code`
 | SORT @timestamp ASC
 ```
 
-> **This is the critical insight:** You are querying `lab4-app-logs-*` — the **same observability index from Challenge 1.** No separate SIEM ingest. No data duplication. No additional cost.
+> **This is the critical insight:** You are querying `lab7-attack-logs-*` — the **same observability index as your APM logs.** No separate SIEM ingest. No data duplication. No additional cost.
 
 ---
 
@@ -117,12 +118,12 @@ FROM lab4-app-logs-*
 This is the logic underlying your detection rule:
 
 ```esql
-FROM lab4-app-logs-*
+FROM lab7-attack-logs-*
 | WHERE @timestamp > NOW() - 15 minutes
-  AND http.response.status_code == 401
-| STATS failure_count    = COUNT(),
-        endpoints_hit    = COUNT_DISTINCT(url.path)
-  BY source.ip, user.name
+  AND `http.response.status_code` == 401
+| STATS failure_count = COUNT(),
+        endpoints_hit = COUNT_DISTINCT(`url.path`)
+  BY `source.ip`, `user.name`
 | WHERE failure_count >= 5
 | SORT failure_count DESC
 ```
@@ -135,8 +136,10 @@ FROM lab4-app-logs-*
 2. Find **"[Lab 7] Brute Force: Auth Failures on Observability Logs"**
 3. Confirm:
    - Status: **Enabled**
-   - Index pattern: `lab4-app-logs-*` ← your observability index, not a SIEM-specific index
+   - Index pattern: `lab7-attack-logs-*` ← your observability index, not a SIEM-specific index
    - MITRE ATT&CK mapping: `T1110 - Brute Force`
+
+> If the rule was not auto-created, create it manually: **Create Rule → Threshold** → index `lab7-attack-logs-*`, query `http.response.status_code: 401`, threshold ≥ 5 grouped by `source.ip`.
 
 ---
 
@@ -144,33 +147,35 @@ FROM lab4-app-logs-*
 
 1. Navigate to **Security → Alerts**
 2. Click any alert to expand it
-3. Note the source index in the alert details: `lab4-app-logs-*`
+3. Note the source index in the alert details: `lab7-attack-logs-*`
 4. Click **Investigate in Timeline** — you see the raw log events directly
 
 > In Splunk ES, this alert would reference data from a CIM-normalized SIEM datastore, separate from your observability data. In Elastic, the alert points directly to the **original observability log document.**
 
 ---
 
-## Step 5: Pivot Alert → Trace (The Full Circle)
+## Step 5: Pivot to the Live Claro Streams
 
-From the alert Timeline view, find a log event and note the `trace.id` field.
-
-Run this in ES|QL to close the loop — from security alert to the original APM trace:
+Now see the same capability on your **live** Claro observability data. Run this in ES|QL:
 
 ```esql
-FROM lab4-apm-traces-*
-| WHERE trace.id == "<trace-id-from-alert>"
-| KEEP @timestamp, service.name, span.duration.us,
-       http.response.status_code, error.message
+FROM logs.otel, logs.otel.*
+| WHERE severity_text == "ERROR"
+  AND @timestamp > NOW() - 10 minutes
+| STATS error_count = COUNT(),
+        services    = COUNT_DISTINCT(service.name)
+  BY `service.name`
+| SORT error_count DESC
+| LIMIT 10
 ```
 
-> Security → Observability → APM — all in one platform, all at zero additional data cost.
+> **The same query that powers your SRE dashboards can drive a security detection rule.** No second data copy required.
 
 ---
 
 ## ✅ Complete When:
 
-- [ ] The ES|QL query confirms the brute-force events exist in `lab4-app-logs-*` (the observability index)
-- [ ] The detection rule in Kibana Security shows `lab4-app-logs-*` as its target index
+- [ ] The ES|QL query confirms the brute-force events exist in `lab7-attack-logs-*` (the observability index)
+- [ ] The detection rule in Kibana Security shows `lab7-attack-logs-*` as its target index
 - [ ] A security alert is visible in Security → Alerts
 - [ ] You confirmed no separate SIEM index or double-ingest was required

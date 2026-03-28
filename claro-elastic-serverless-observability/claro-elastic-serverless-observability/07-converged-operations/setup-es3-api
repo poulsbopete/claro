@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Challenge 7 setup: Converged Operations
-# Inject a brute-force attack pattern into the Lab 4 observability log index,
-# then create a Kibana Security detection rule targeting that same index.
+# Inject a brute-force attack pattern into a dedicated observability-style log index.
 # Proves SIEM coverage on observability data = zero extra ingest cost.
+# Uses only curl + python3 built-ins (no requests library needed).
 set -euo pipefail
 
 log()  { printf "[ch7-setup] %s\n" "$*"; }
@@ -46,130 +46,131 @@ kb() {
 }
 
 TODAY=$(python3 -c "from datetime import datetime; print(datetime.utcnow().strftime('%Y.%m.%d'))")
-LOG_INDEX="lab4-app-logs-${TODAY}"
+LOG_INDEX="lab7-attack-logs-${TODAY}"
 
-# ── Ensure Lab 4 log index exists (seed if Challenge 4 wasn't run first) ──────
-log "Checking for Lab 4 log index: ${LOG_INDEX}..."
-COUNT=$(es GET "/${LOG_INDEX}/_count" | python3 -c "import sys,json; print(json.load(sys.stdin).get('count',0))" 2>/dev/null || echo "0")
-
-if [[ "$COUNT" -lt 10 ]]; then
-  log "Lab 4 data not found — seeding minimal app logs..."
-  es PUT "/_index_template/lab4-app-logs" '{
-    "index_patterns": ["lab4-app-logs-*"],
-    "template": {
-      "settings": {"number_of_shards": 1, "number_of_replicas": 0},
-      "mappings": {
-        "properties": {
-          "@timestamp":                {"type":"date"},
-          "trace.id":                  {"type":"keyword"},
-          "log.level":                 {"type":"keyword"},
-          "message":                   {"type":"text"},
-          "service.name":              {"type":"keyword"},
-          "url.path":                  {"type":"keyword"},
-          "http.response.status_code": {"type":"integer"},
-          "source.ip":                 {"type":"ip"},
-          "user.name":                 {"type":"keyword"},
-          "event.action":              {"type":"keyword"},
-          "event.outcome":             {"type":"keyword"}
-        }
+# ── Index template ─────────────────────────────────────────────────────────────
+log "Creating lab7 index template..."
+es PUT "/_index_template/lab7-attack-logs" '{
+  "index_patterns": ["lab7-attack-logs-*"],
+  "template": {
+    "settings": {"number_of_shards": 1, "number_of_replicas": 0},
+    "mappings": {
+      "properties": {
+        "@timestamp":                {"type":"date"},
+        "trace.id":                  {"type":"keyword"},
+        "log.level":                 {"type":"keyword"},
+        "message":                   {"type":"text"},
+        "service.name":              {"type":"keyword"},
+        "url.path":                  {"type":"keyword"},
+        "http.response.status_code": {"type":"integer"},
+        "source.ip":                 {"type":"ip"},
+        "user.name":                 {"type":"keyword"},
+        "event.action":              {"type":"keyword"},
+        "event.outcome":             {"type":"keyword"}
       }
     }
-  }' > /dev/null 2>&1
+  }
+}' | python3 -c "import sys,json; r=json.load(sys.stdin); print('  template:', r.get('acknowledged','?'))"
 
-  python3 - <<SEED
-import json, random, uuid, requests, os
-from datetime import datetime, timedelta, timezone
-ES_URL=os.environ.get("ES_URL",""); ES_API_KEY=os.environ.get("ES_API_KEY","")
-ES_USER=os.environ.get("ES_USERNAME","admin"); ES_PASS=os.environ.get("ES_PASSWORD","")
-headers={"Content-Type":"application/json"}
-auth=None
-if ES_API_KEY: headers["Authorization"]=f"ApiKey {ES_API_KEY}"
-else:
-    from requests.auth import HTTPBasicAuth; auth=HTTPBasicAuth(ES_USER, ES_PASS)
-NOW=datetime.now(timezone.utc); INDEX=f"lab4-app-logs-{NOW.strftime('%Y.%m.%d')}"
-bulk=""
-for i in range(50):
-    ts=(NOW-timedelta(minutes=random.randint(0,60))).strftime("%Y-%m-%dT%H:%M:%S.000Z")
-    doc={"@timestamp":ts,"trace.id":uuid.uuid4().hex,"log.level":random.choice(["INFO","WARN","ERROR"]),
-         "message":f"checkout-service request status={random.choice([200,500])}",
-         "service.name":"checkout-service","url.path":"/api/checkout",
-         "http.response.status_code":random.choice([200,500]),
-         "source.ip":f"10.0.{random.randint(0,255)}.{random.randint(1,254)}","user.name":f"user_{i%10}"}
-    bulk+=json.dumps({"index":{"_index":INDEX}})+"\n"+json.dumps(doc)+"\n"
-r=requests.post(f"{ES_URL}/_bulk",data=bulk,headers={**headers,"Content-Type":"application/x-ndjson"},auth=auth,verify=False)
-print(f"  Seeded 50 baseline docs (errors={r.json().get('errors',True)})")
-SEED
-fi
+# ── Generate bulk NDJSON and index via curl ────────────────────────────────────
+log "Generating baseline + brute-force attack events..."
 
-# ── Inject brute-force attack events ─────────────────────────────────────────
-log "Injecting brute-force attack events into ${LOG_INDEX}..."
-python3 - <<PYEOF
-import json, uuid, requests, os
+BULK_NDJSON=$(python3 - <<PYEOF
+import json, random
 from datetime import datetime, timedelta, timezone
 
-ES_URL     = os.environ.get("ES_URL","")
-ES_API_KEY = os.environ.get("ES_API_KEY","")
-ES_USER    = os.environ.get("ES_USERNAME","admin")
-ES_PASS    = os.environ.get("ES_PASSWORD","")
-INDEX      = os.environ.get("LOG_INDEX","")
-
-headers = {"Content-Type":"application/json"}
-auth    = None
-if ES_API_KEY: headers["Authorization"] = f"ApiKey {ES_API_KEY}"
-else:
-    from requests.auth import HTTPBasicAuth; auth = HTTPBasicAuth(ES_USER, ES_PASS)
-
-NOW = datetime.now(timezone.utc)
+INDEX  = "${LOG_INDEX}"
+NOW    = datetime.now(timezone.utc)
 ATTACK_IP   = "198.51.100.42"
 ATTACK_USER = "admin"
-bulk        = ""
+SERVICES = ["payments-api", "user-mgmt", "billing-engine", "mobile-core", "voice-platform"]
 
-for i in range(15):
-    ts = NOW - timedelta(minutes=5, seconds=i*20)
-    doc = {
+lines = []
+
+# 50 baseline observability events (normal traffic)
+for i in range(50):
+    ts = NOW - timedelta(minutes=random.randint(10, 90))
+    svc = random.choice(SERVICES)
+    status = random.choice([200, 200, 200, 404, 500])
+    lines.append(json.dumps({"index": {"_index": INDEX}}))
+    lines.append(json.dumps({
         "@timestamp": ts.strftime("%Y-%m-%dT%H:%M:%S.000Z"),
-        "trace.id": uuid.uuid4().hex, "log.level": "WARN",
+        "trace.id": f"trace-{abs(hash(str(i))) % 10**16:016x}",
+        "log.level": "ERROR" if status >= 500 else ("WARN" if status >= 400 else "INFO"),
+        "message": f"{svc} request completed status={status}",
+        "service.name": svc,
+        "url.path": "/api/v1/data",
+        "http.response.status_code": status,
+        "source.ip": f"10.0.{random.randint(0,255)}.{random.randint(1,254)}",
+        "user.name": f"user_{i % 10}",
+        "event.action": "request",
+        "event.outcome": "failure" if status >= 400 else "success"
+    }))
+
+# 15 brute-force authentication failures
+for i in range(15):
+    ts = NOW - timedelta(minutes=5, seconds=i * 20)
+    lines.append(json.dumps({"index": {"_index": INDEX}}))
+    lines.append(json.dumps({
+        "@timestamp": ts.strftime("%Y-%m-%dT%H:%M:%S.000Z"),
+        "trace.id": f"attack-trace-{i:04d}",
+        "log.level": "WARN",
         "message": f"Authentication failed for user '{ATTACK_USER}' from {ATTACK_IP}",
-        "service.name": "checkout-service", "url.path": "/api/auth/login",
-        "http.response.status_code": 401, "source.ip": ATTACK_IP,
-        "user.name": ATTACK_USER, "event.action": "authentication_failure",
+        "service.name": "payments-api",
+        "url.path": "/api/auth/login",
+        "http.response.status_code": 401,
+        "source.ip": ATTACK_IP,
+        "user.name": ATTACK_USER,
+        "event.action": "authentication_failure",
         "event.outcome": "failure"
-    }
-    bulk += json.dumps({"index":{"_index":INDEX}}) + "\n" + json.dumps(doc) + "\n"
+    }))
 
+# 1 successful brute-force login at the end
 ts = NOW - timedelta(minutes=4, seconds=50)
-bulk += json.dumps({"index":{"_index":INDEX}}) + "\n"
-bulk += json.dumps({
+lines.append(json.dumps({"index": {"_index": INDEX}}))
+lines.append(json.dumps({
     "@timestamp": ts.strftime("%Y-%m-%dT%H:%M:%S.000Z"),
-    "trace.id": uuid.uuid4().hex, "log.level": "INFO",
+    "trace.id": "attack-trace-success-001",
+    "log.level": "INFO",
     "message": f"Authentication succeeded for user '{ATTACK_USER}' from {ATTACK_IP}",
-    "service.name": "checkout-service", "url.path": "/api/auth/login",
-    "http.response.status_code": 200, "source.ip": ATTACK_IP,
-    "user.name": ATTACK_USER, "event.action": "authentication_success",
+    "service.name": "payments-api",
+    "url.path": "/api/auth/login",
+    "http.response.status_code": 200,
+    "source.ip": ATTACK_IP,
+    "user.name": ATTACK_USER,
+    "event.action": "authentication_success",
     "event.outcome": "success"
-}) + "\n"
+}))
 
-r = requests.post(f"{ES_URL}/_bulk", data=bulk,
-                  headers={**headers,"Content-Type":"application/x-ndjson"},
-                  auth=auth, verify=False)
-print(f"  Attack events injected: 15 failures + 1 success (errors={r.json().get('errors',True)})")
-print(f"  Attack IP: {ATTACK_IP} | Index: {INDEX}")
+print("\n".join(lines))
 PYEOF
+)
+
+echo "$BULK_NDJSON" | curl -sk -X POST "${ES_URL}/_bulk" \
+  -H "$AUTH_HEADER" \
+  -H "Content-Type: application/x-ndjson" \
+  --data-binary @- \
+  | python3 -c "
+import sys, json
+r = json.load(sys.stdin)
+errors = r.get('errors', True)
+items  = r.get('items', [])
+print(f'  Indexed {len(items)} docs (errors={errors})')
+"
 
 # ── Create Kibana Security detection rule ─────────────────────────────────────
 log "Creating Kibana Security detection rule..."
 
-RULE_BODY=$(cat <<RULEEOF
-{
+RULE_BODY='{
   "type": "query",
   "language": "kuery",
   "name": "[Lab 7] Brute Force: Auth Failures on Observability Logs",
-  "description": "Detects repeated authentication failures from a single IP on the Lab 4 observability index — demonstrating zero-cost SIEM coverage on existing APM log data. No double ingest required.",
+  "description": "Detects repeated authentication failures from a single IP on the lab7 observability index — demonstrating zero-cost SIEM coverage on existing APM log data. No double ingest required.",
   "severity": "high",
   "risk_score": 73,
   "enabled": true,
   "tags": ["lab7","brute-force","converged-operations","no-double-ingest","competitive"],
-  "index": ["lab4-app-logs-*"],
+  "index": ["lab7-attack-logs-*"],
   "query": "http.response.status_code: 401 AND event.action: authentication_failure",
   "filters": [],
   "from": "now-10m",
@@ -194,9 +195,7 @@ RULE_BODY=$(cat <<RULEEOF
   "author": ["Elastic Competitive Workshop"],
   "license": "Elastic License v2",
   "actions": []
-}
-RULEEOF
-)
+}'
 
 RULE_RESP=$(kb POST "/api/detection_engine/rules" "$RULE_BODY" 2>/dev/null || echo '{}')
 RULE_ID=$(echo "$RULE_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin).get('id','unknown'))" 2>/dev/null || echo "unknown")
@@ -210,6 +209,6 @@ else
 fi
 
 agent variable set LAB7_LOG_INDEX "$LOG_INDEX" 2>/dev/null || true
-agent variable set LAB7_ATTACK_IP "198.51.100.42"  2>/dev/null || true
+agent variable set LAB7_ATTACK_IP "198.51.100.42" 2>/dev/null || true
 
 log "Challenge 7 setup complete. Attack events in: ${LOG_INDEX}"
