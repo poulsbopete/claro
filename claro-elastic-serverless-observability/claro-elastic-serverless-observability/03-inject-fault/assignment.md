@@ -8,6 +8,15 @@ teaser: Use the incident simulator to inject a realistic multi-cloud fault and w
 notes:
 - type: text
   contents: |
+    ## Workshop Slides
+
+    Follow along with the full presentation:
+
+    **[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**
+
+    *(Opens in a new tab)*
+- type: text
+  contents: |
     ## Lab 3 — Inject a Fault and Watch Elastic Detect It
 
     **By the end of this challenge you will:**
@@ -57,16 +66,16 @@ notes:
 
     | Category | Cloud | Example Faults |
     |----------|-------|---------------|
-    | **Network Core** | Azure | MAC flapping, BGP peer drop, spanning tree change |
-    | **Security** | Azure | Firewall session exhaustion, SSL cert expiry |
-    | **WiFi / Network Access** | GCP | AP disconnect storm, channel interference |
-    | **Network Services** | Azure | DNS failure, DHCP lease storm |
-    | **Commerce** | AWS | Bid latency spike, payment timeout, catalog sync failure |
-    | **Manufacturing** | AWS | Print queue overflow, QC rejection spike |
-    | **Logistics** | GCP | Label printer failure, warehouse scanner desync |
-    | **Cloud Ops** | GCP | Orphaned resource alert, VPN tunnel flapping |
+    | **Mobile Core** | AWS | 5G SA session failure, LTE X2 handover storm, DNS/NRF failure |
+    | **Billing & Charging** | AWS | CDR mediation backlog, OCS Diameter Gy failure, real-time fraud spike |
+    | **Messaging** | AWS | SMSC queue overflow, SMPP bind failures |
+    | **Digital Services** | GCP | Customer portal auth cascade, self-care API rate limit |
+    | **CDN & Video** | GCP | CDN cache purge storm, video transcoding pipeline stall |
+    | **Analytics** | GCP | Network analytics pipeline lag, DPI classification failure |
+    | **Voice & IoT** | Azure | SIP trunk saturation, IMS registration storm, MQTT broker overload |
+    | **Operations** | Azure | NOC alert storm, BGP route flap |
 
-    Start with **Channel 12 — Auction Bid Latency Spike** for the clearest end-to-end demo.
+    Start with **Channel 1 — 5G SA Core Session Failure** for the clearest end-to-end telecom demo.
 tabs:
 - id: tue0oby8caoi
   title: Demo App
@@ -118,7 +127,7 @@ Trigger a fault from the **Demo App**, then watch Elastic automatically investig
 1. Open the **Chaos Controller** tab
 2. Select any fault channel and click **Inject Fault**
 
-> **Recommended:** Start with **Channel 12 — Auction Bid Latency Spike** for the clearest end-to-end demo.
+> **Recommended:** Start with **Channel 1 — 5G SA Core Session Failure** for the clearest end-to-end telecom demo.
 
 While the fault propagates, run this query in **Elastic Serverless → Discover → ES|QL** to watch the error spike in real time:
 
@@ -138,7 +147,7 @@ FROM logs*
 
 In the **Elastic Serverless** tab, go to **Observability → Workflows**.
 
-Within 1–2 minutes of injecting the fault, the **Fanatics Collectibles Significant Event Notification** workflow will show a recent execution. Click it to see each step:
+Within 1–2 minutes of injecting the fault, the **Claro NOC Significant Event Notification** workflow will show a recent execution. Click it to see each step:
 
 - **count_errors** — ES|QL query counting recent errors from the affected service
 - **run_rca** — AI agent root-cause analysis
@@ -158,3 +167,62 @@ A new case will appear automatically with:
 - Severity set to **High**
 
 ✅ **Ready to continue when** you can see a workflow execution and an auto-created case in Elastic Serverless.
+
+---
+
+<details>
+<summary>🇧🇷 <strong>Português — clique para expandir</strong></summary>
+
+# Injetar uma Falha e Ver o Elastic Detectá-la
+
+Acione uma falha no **Demo App** e observe o Elastic investigar e criar um caso automaticamente — sem intervenção humana.
+
+---
+
+## Passo 1 — Injetar uma Falha
+
+1. Abra a aba **Chaos Controller**
+2. Selecione qualquer canal de falha e clique em **Inject Fault**
+
+> **Recomendado:** Comece com o **Canal 1 — 5G SA Core Session Failure** para a demonstração telecom mais clara de ponta a ponta.
+
+Enquanto a falha se propaga, execute esta consulta em **Elastic Serverless → Discover → ES|QL** para acompanhar o pico de erros em tempo real:
+
+```esql
+FROM logs*
+| WHERE @timestamp > NOW() - 15 MINUTES
+| WHERE severity_text == "ERROR"
+| STATS errors = COUNT(*) BY service.name
+| SORT errors DESC
+```
+
+> **Dica:** Reexecute a cada 30 segundos após injetar a falha — você verá a contagem de erros do serviço afetado subir enquanto todos os outros permanecem estáveis.
+
+---
+
+## Passo 2 — Acompanhar a Execução do Workflow
+
+Na aba **Elastic Serverless**, vá para **Observability → Workflows**.
+
+Em 1–2 minutos após injetar a falha, o workflow **Claro NOC Significant Event Notification** mostrará uma execução recente. Clique nela para ver cada etapa:
+
+- **count_errors** — consulta ES|QL contando erros recentes do serviço afetado
+- **run_rca** — análise de causa raiz pelo agente de IA
+- **create_case** — caso Kibana criado com as descobertas da RCA
+
+Clique em **View Full Conversation** para abrir o histórico completo do agente de IA — você pode ver exatamente o que ele consultou, o que encontrou e por que chegou às suas conclusões. Você também pode digitar perguntas adicionais ou pedir ao agente que execute uma ação de remediação.
+
+---
+
+## Passo 3 — Revisar o Caso
+
+Vá para **Observability → Cases** (ou clique em **Cases** na navegação lateral).
+
+Um novo caso aparecerá automaticamente com:
+- O nome da falha e o serviço afetado no título
+- A análise de causa raiz do agente de IA na descrição
+- Severidade definida como **Alta**
+
+✅ **Pronto para continuar quando** você conseguir ver uma execução de workflow e um caso criado automaticamente no Elastic Serverless.
+
+</details>

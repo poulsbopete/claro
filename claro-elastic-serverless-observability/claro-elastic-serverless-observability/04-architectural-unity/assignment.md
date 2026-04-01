@@ -156,3 +156,87 @@ Kibana automatically shows every log line correlated to that trace via the share
 - [ ] You retrieved a `trace.id` from a failing log entry
 - [ ] You queried all logs for that trace with a single ES|QL statement
 - [ ] You clicked the **Logs** tab inside an APM trace detail — one click, no product switch
+
+---
+
+<details>
+<summary>🇧🇷 <strong>Português — clique para expandir</strong></summary>
+
+# Diferencial Competitivo 1: Unidade Arquitetônica
+
+Nove microsserviços da Claro estão gerando continuamente rastreamentos e logs **reais** via OpenTelemetry — todos fluindo para o mesmo armazenamento Elasticsearch. Neste desafio você irá do rastreamento APM em tempo real diretamente para sua linha de log correlacionada sem trocar de ferramenta, aba ou linguagem de consulta.
+
+---
+
+## Passo 1: Encontrar Serviços com Mais Erros via ES|QL
+
+Abra a aba **Elastic Serverless** → **Discover** → mude para o modo **ES|QL** e execute:
+
+```esql
+FROM logs.otel, logs.otel.*
+| WHERE @timestamp > NOW() - 15 MINUTES
+| WHERE severity_text == "ERROR"
+| STATS errors = COUNT(*) BY service.name
+| SORT errors DESC
+| LIMIT 10
+```
+
+> Você verá todos os 9 serviços da Claro classificados por contagem de erros. Serviços com falhas ativas de chaos mostrarão números muito maiores.
+
+---
+
+## Passo 2: Obter um Trace ID de um Log com Falha
+
+Encontre um log de ERRO que tenha um `trace.id` — este é o elo que conecta logs a rastreamentos:
+
+```esql
+FROM logs.otel, logs.otel.*
+| WHERE @timestamp > NOW() - 5 MINUTES
+| WHERE severity_text == "ERROR" AND trace.id IS NOT NULL
+| KEEP service.name, body.text, trace.id, @timestamp
+| SORT @timestamp DESC
+| LIMIT 5
+```
+
+Copie o valor de `trace.id` de qualquer linha (uma string hexadecimal de 32 caracteres).
+
+---
+
+## Passo 3: Pivotar para Todos os Logs Correlacionados — O Jeito Elastic
+
+Cole seu `trace.id` nesta consulta para ver **todas as linhas de log dessa mesma requisição**, em todos os serviços envolvidos:
+
+```esql
+FROM logs.otel, logs.otel.*
+| WHERE trace.id == "<cole-seu-trace-id-aqui>"
+| KEEP @timestamp, service.name, severity_text, body.text
+| SORT @timestamp ASC
+```
+
+> **No Splunk:** Você está agora em um segundo produto (Splunk Cloud), executando uma segunda pesquisa em SPL, em outra aba do navegador, torcendo para que a janela de retenção de logs corresponda.
+>
+> **No Elastic:** Mesmo ES|QL, mesmo armazenamento, mesma sessão. **Uma plataforma. Zero troca de contexto.**
+
+---
+
+## Passo 4: Ver a Correlação Nativa APM ↔ Log no Kibana
+
+Nenhuma consulta necessária — o Kibana faz isso automaticamente:
+
+1. Na aba **Elastic Serverless** vá para **Applications → Service inventory**
+2. Clique em qualquer serviço — por exemplo **mobile-core** ou **billing-engine**
+3. Clique em qualquer **transação** para abrir o waterfall de rastreamento
+4. Clique na aba **Logs** no topo do painel de detalhes do rastreamento
+
+O Kibana mostra automaticamente todas as linhas de log correlacionadas ao rastreamento via o campo `trace.id` compartilhado — sem configuração, sem copiar e colar, sem segundo produto.
+
+---
+
+## ✅ Concluído Quando:
+
+- [ ] Sua consulta ES|QL de erros mostra os serviços da Claro classificados por taxa de erros
+- [ ] Você obteve um `trace.id` de uma entrada de log com falha
+- [ ] Você consultou todos os logs desse rastreamento com uma única instrução ES|QL
+- [ ] Você clicou na aba **Logs** dentro de um detalhe de rastreamento APM — um clique, sem troca de produto
+
+</details>

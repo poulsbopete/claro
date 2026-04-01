@@ -14,7 +14,7 @@ notes:
 
     **[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**
 
-    The slides cover all four competitive differentiators you'll explore in these labs — with bilingual English/Spanish support.
+    The slides cover all four competitive differentiators you'll explore in these labs — with bilingual English/Portuguese support.
 
     *(Opens in a new tab — come back here when setup completes)*
 - type: text
@@ -172,3 +172,55 @@ Click the **Elastic Serverless** tab — you're already logged in. Navigate to:
 | Data views | `logs.otel`, `logs.otel.*`, `metrics-*` |
 
 ✅ **You're ready for the next challenge when** you can see logs, services, or SLOs in the Elastic Serverless tab.
+
+---
+
+<details>
+<summary>🇧🇷 <strong>Português — clique para expandir</strong></summary>
+
+# Conectar ao Elastic Cloud e Implantar
+
+Tudo foi **provisionado automaticamente** quando este lab iniciou — seu projeto Elastic Cloud está ativo, 9 microsserviços estão enviando telemetria e a pilha de observabilidade com IA está configurada. Nada para configurar.
+
+---
+
+## Explorar o Demo App
+
+Use as três abas do Demo App para explorar o cenário em execução:
+
+| Aba | O que você verá |
+|-----|----------------|
+| **Demo App** | Seletor de cenário — visão geral e status da implantação |
+| **Live Dashboard** | Saúde dos serviços em tempo real entre os 9 microsserviços |
+| **Chaos Controller** | 20 canais de falha prontos para injeção — você usará isso no Lab 3 |
+
+---
+
+## Explorar o Elastic Serverless
+
+Clique na aba **Elastic Serverless** — você já está autenticado. Navegue para:
+
+- **Discover → ES|QL** — consulte logs em tempo real de `mobile-core`, `billing-engine`, `sms-gateway`, `customer-portal` e mais
+- **Applications → Service inventory** — rastreamentos distribuídos de 9 serviços
+- **Observability → Infrastructure** — 3 hosts simulados (AWS, GCP, Azure)
+- **Observability → SLOs** — 27 SLOs criados automaticamente, um por serviço por tipo de sinal
+- **Observability → Workflows** — 4 fluxos de resposta com IA pré-configurados
+
+> **Dica:** Defina o intervalo de tempo para **Últimos 15 minutos** para ver os dados mais recentes.
+
+---
+
+## O Que Foi Implantado Automaticamente
+
+| Recurso | Detalhes |
+|---------|---------|
+| Regras de alerta | 20 regras ES\|QL — uma por canal de falha, intervalo de 30s |
+| Agente de IA | Ferramentas de investigação + prompt do sistema |
+| Workflows | Alerta → investigar → criar caso → remediar |
+| Dashboards | Dashboard executivo + dashboards de sinais OTel |
+| SLOs | 21 SLOs criados automaticamente em todos os serviços |
+| Data views | `logs.otel`, `logs.otel.*`, `metrics-*` |
+
+✅ **Você está pronto para o próximo desafio quando** conseguir ver logs, serviços ou SLOs na aba Elastic Serverless.
+
+</details>

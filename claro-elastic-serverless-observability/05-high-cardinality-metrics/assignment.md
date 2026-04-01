@@ -188,3 +188,114 @@ You'll see `billing-engine` and `mobile-core` logs appearing under their own `da
 - [ ] You accepted at least two partition suggestions and new child streams appeared
 - [ ] You set different retention policies on each child stream
 - [ ] You added a `drop_field` processing rule to one stream (without affecting others)
+
+---
+
+<details>
+<summary>🇧🇷 <strong>Português — clique para expandir</strong></summary>
+
+# Diferencial Competitivo 2: Elastic Streams — Particionamento Inteligente
+
+O Elastic já está monitorando o stream de logs da Claro em tempo real. Abra a aba **Elastic Serverless** — você está na página de Streams.
+
+---
+
+## Passo 1: Abrir logs.otel e Revisar as Sugestões de Particionamento
+
+1. Clique em **`logs.otel`** na lista de Streams
+2. Clique na aba **Partitioning** no topo
+
+O Kibana analisou os últimos 1.000 documentos de `logs.otel` e identificou automaticamente que este stream contém dados de múltiplos serviços da Claro. Você verá streams filhos sugeridos como:
+
+- `logs.otel.billing-engine`
+- `logs.otel.mobile-core`
+- `logs.otel.voice-platform`
+- `logs.otel.noc-dashboard`
+- `logs.otel.content-delivery`
+- ... (um por serviço)
+
+Cada sugestão mostra o **percentual do volume de logs** que aquele serviço representa, junto com uma **pré-visualização de dados** ao vivo das mensagens de log que seriam roteadas para lá.
+
+> **Por que isso importa:** O Kibana fez a análise automaticamente. No Splunk, um engenheiro de plataforma precisaria escrever manualmente regras de roteamento no Collector — lendo o esquema de dados, escolhendo dimensões de divisão, testando em staging e depois implantando. Aqui, o Elastic mostra a resposta automaticamente.
+
+---
+
+## Passo 2: Aceitar Dois Particionamentos
+
+Clique em **Aceitar** em **pelo menos dois** dos particionamentos sugeridos — por exemplo:
+
+1. `logs.otel.billing-engine` — eventos de cobrança e OCS (maior impacto financeiro)
+2. `logs.otel.mobile-core` — eventos do core de rede 5G/4G
+
+Após aceitar, o Kibana imediatamente:
+- Cria os streams filhos `logs.otel.billing-engine` e `logs.otel.mobile-core`
+- Configura regras de roteamento para que novos logs desses serviços vão para seu stream dedicado
+- `logs.otel` continua recebendo logs de todos os outros serviços
+
+> **O equivalente no Splunk:** Modificar `otelcol-contrib.yaml` com regras de roteamento, implantar em todos os nós coletores, aguardar reinicialização, verificar no Splunk. Sem pré-visualização. Sem sugestões automáticas. E se errar, os dados vão para o destino errado até corrigir e reimplantar.
+
+---
+
+## Passo 3: Definir Retenção Diferente em Cada Stream Filho
+
+Clique em **`logs.otel.billing-engine`** na lista de Streams.
+
+1. Clique na aba **Retention**
+2. Mude a retenção para **7 dias** → Salvar
+   - Logs de cobrança precisam de detalhes para triagem rápida de incidentes
+
+Agora clique em **`logs.otel.mobile-core`**:
+
+1. Clique na aba **Retention**
+2. Mude a retenção para **30 dias** → Salvar
+   - Eventos do core 5G são necessários por mais tempo para planejamento de capacidade e análise de handover
+
+> No Splunk, a retenção é definida no **nível do índice** via DDAA — uma política global. Você não pode definir retenções diferentes para serviços diferentes dentro do mesmo índice.
+
+---
+
+## Passo 4: Adicionar uma Regra de Processamento para Remover um Campo de Alta Cardinalidade
+
+Clique em **`logs.otel.mobile-core`** → aba **Processing**:
+
+1. Clique em **Add processor**
+2. Selecione **Drop field**
+3. Digite o nome do campo: `kubernetes.pod.uid`
+4. Deixe a condição em branco (aplica a todos os documentos)
+5. Clique em **Save**
+
+Isso remove `kubernetes.pod.uid` **apenas do stream mobile-core** — o stream billing-engine ainda o mantém para correlação de incidentes no nível do pod.
+
+> **Este é o problema central de custo do Splunk:** No Splunk Observability Cloud, `kubernetes.pod.uid` cria um novo MTS para cada pod. Com centenas de pods 5G rotacionando a cada implantação, as faturas explodem. A única solução é remover o campo no Collector — globalmente, para todos os destinos. No Elastic, você remove de um stream sem afetar os outros.
+
+---
+
+## Passo 5: Verificar na Lista de Streams
+
+Volte para a lista de Streams. Você deve ver seus streams filhos ao lado de `logs.otel`:
+
+| Stream | Propósito | Retenção |
+|--------|----------|---------|
+| `logs.otel` | Todos os outros serviços | Indefinida |
+| `logs.otel.billing-engine` | Eventos OCS/CDR de cobrança | 7 dias |
+| `logs.otel.mobile-core` | Eventos do core 5G/4G | 30 dias |
+
+Confirme que os dados estão sendo roteados para os streams filhos via ES|QL:
+
+```esql
+FROM logs.otel, logs.otel.*
+| WHERE @timestamp > NOW() - 5 MINUTES
+| STATS log_count = COUNT(*) BY data_stream.dataset, service.name
+| SORT log_count DESC
+```
+
+---
+
+## ✅ Concluído Quando:
+
+- [ ] Você revisou as sugestões de particionamento geradas automaticamente em `logs.otel → Partitioning`
+- [ ] Você aceitou pelo menos duas sugestões e novos streams filhos apareceram
+- [ ] Você definiu políticas de retenção diferentes em cada stream filho
+- [ ] Você adicionou uma regra de processamento `drop_field` a um stream (sem afetar os outros)
+
+</details>

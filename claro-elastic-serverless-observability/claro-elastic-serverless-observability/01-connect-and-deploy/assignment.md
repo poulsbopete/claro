@@ -8,14 +8,25 @@ teaser: Wire the demo platform to your Elastic Cloud project and launch 9 micros
 notes:
 - type: text
   contents: |
+    ## Workshop Slides
+
+    Follow along with the full presentation while the lab sets up:
+
+    **[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**
+
+    The slides cover all four competitive differentiators you'll explore in these labs — with bilingual English/Portuguese support.
+
+    *(Opens in a new tab — come back here when setup completes)*
+- type: text
+  contents: |
     ## Lab 1 — Connect to Elastic Cloud & Deploy
 
     **What's happening right now:**
-    Your Elastic Cloud Serverless Observability project is being provisioned and the Fanatics Live demo platform is being configured with your credentials.
+    Your Elastic Cloud Serverless Observability project is being provisioned and the Claro NOC demo platform is being configured with your credentials.
 
     **By the end of this challenge you will:**
 
-    - ✅ Confirm the Fanatics Live scenario is deployed and sending telemetry
+    - ✅ Confirm the Claro scenario is deployed and sending live telemetry
     - ✅ Open your Elastic Serverless project — no login required
     - ✅ Verify logs, metrics, and traces are flowing from 9 microservices
     - ✅ Review the auto-provisioned AI agent, alert rules, and workflows
@@ -32,11 +43,11 @@ notes:
     | **Demo App** | Control panel — view service health, manage deployments, inject faults |
     | **Elastic Serverless** | Your Observability project — pre-logged in, data already flowing |
 
-    **The Fanatics Live scenario simulates 9 microservices across 3 clouds:**
+    **The Claro Network Operations Center scenario simulates 9 microservices across 3 clouds:**
 
-    - ☁️ **AWS** — Auction Engine, Card Printing, Payment Processing
-    - ☁️ **GCP** — Fan Engagement, Loyalty Rewards, Streaming CDN
-    - ☁️ **Azure** — Navigation, Fraud Detection, Fulfillment
+    - ☁️ **AWS** — Mobile Core (5G/4G AMF/SMF/UPF), Billing Engine (OCS/CDR), SMS Gateway (SMSC/SMPP)
+    - ☁️ **GCP** — Customer Portal (Mi Claro), Content Delivery (CDN/Claro TV), Network Analytics (DPI/Flink)
+    - ☁️ **Azure** — Voice Platform (IMS/SIP), IoT Connect (MQTT/PKI), NOC Dashboard (BGP/Alerts)
 
     Every service emits **real OpenTelemetry** logs, metrics, and traces — no synthetic data.
 - type: text
@@ -139,10 +150,10 @@ Use the three Demo App tabs to explore the running scenario:
 
 Click the **Elastic Serverless** tab — you're already logged in. Navigate to:
 
-- **Discover → ES|QL** — query live logs from `auction-engine`, `card-printing-system`, `digital-marketplace`, and more
-- **Applications → Service inventory** — distributed traces from 7 services
+- **Discover → ES|QL** — query live logs from `mobile-core`, `billing-engine`, `sms-gateway`, `customer-portal`, and more
+- **Applications → Service inventory** — distributed traces from 9 services
 - **Observability → Infrastructure** — 3 simulated hosts (AWS, GCP, Azure)
-- **Observability → SLOs** — 21 auto-created SLOs, one per service per signal type
+- **Observability → SLOs** — 27 auto-created SLOs, one per service per signal type
 - **Observability → Workflows** — 4 pre-configured AI response workflows
 
 > **Tip:** Set the time range to **Last 15 minutes** to see the freshest data.
@@ -161,3 +172,55 @@ Click the **Elastic Serverless** tab — you're already logged in. Navigate to:
 | Data views | `logs.otel`, `logs.otel.*`, `metrics-*` |
 
 ✅ **You're ready for the next challenge when** you can see logs, services, or SLOs in the Elastic Serverless tab.
+
+---
+
+<details>
+<summary>🇧🇷 <strong>Português — clique para expandir</strong></summary>
+
+# Conectar ao Elastic Cloud e Implantar
+
+Tudo foi **provisionado automaticamente** quando este lab iniciou — seu projeto Elastic Cloud está ativo, 9 microsserviços estão enviando telemetria e a pilha de observabilidade com IA está configurada. Nada para configurar.
+
+---
+
+## Explorar o Demo App
+
+Use as três abas do Demo App para explorar o cenário em execução:
+
+| Aba | O que você verá |
+|-----|----------------|
+| **Demo App** | Seletor de cenário — visão geral e status da implantação |
+| **Live Dashboard** | Saúde dos serviços em tempo real entre os 9 microsserviços |
+| **Chaos Controller** | 20 canais de falha prontos para injeção — você usará isso no Lab 3 |
+
+---
+
+## Explorar o Elastic Serverless
+
+Clique na aba **Elastic Serverless** — você já está autenticado. Navegue para:
+
+- **Discover → ES|QL** — consulte logs em tempo real de `mobile-core`, `billing-engine`, `sms-gateway`, `customer-portal` e mais
+- **Applications → Service inventory** — rastreamentos distribuídos de 9 serviços
+- **Observability → Infrastructure** — 3 hosts simulados (AWS, GCP, Azure)
+- **Observability → SLOs** — 27 SLOs criados automaticamente, um por serviço por tipo de sinal
+- **Observability → Workflows** — 4 fluxos de resposta com IA pré-configurados
+
+> **Dica:** Defina o intervalo de tempo para **Últimos 15 minutos** para ver os dados mais recentes.
+
+---
+
+## O Que Foi Implantado Automaticamente
+
+| Recurso | Detalhes |
+|---------|---------|
+| Regras de alerta | 20 regras ES\|QL — uma por canal de falha, intervalo de 30s |
+| Agente de IA | Ferramentas de investigação + prompt do sistema |
+| Workflows | Alerta → investigar → criar caso → remediar |
+| Dashboards | Dashboard executivo + dashboards de sinais OTel |
+| SLOs | 21 SLOs criados automaticamente em todos os serviços |
+| Data views | `logs.otel`, `logs.otel.*`, `metrics-*` |
+
+✅ **Você está pronto para o próximo desafio quando** conseguir ver logs, serviços ou SLOs na aba Elastic Serverless.
+
+</details>

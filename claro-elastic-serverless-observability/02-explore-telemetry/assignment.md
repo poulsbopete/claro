@@ -286,3 +286,113 @@ The deployer created an **Executive Dashboard** pre-configured for your scenario
 **Elastic Serverless** tab → **Dashboards** → search "Claro" (or "Executive")
 
 ✅ **Ready to continue when** you've seen logs, traces, or metrics in Elastic Serverless and confirmed services are healthy.
+
+---
+
+<details>
+<summary>🇧🇷 <strong>Português — clique para expandir</strong></summary>
+
+# Explorar Telemetria OpenTelemetry em Tempo Real
+
+Com o cenário em execução, vamos explorar os dados que fluem para o Elastic. Abra a aba **Elastic Serverless**.
+
+---
+
+## O Que Está Gerando Telemetria
+
+| Gerador | O Que Produz |
+|---------|-------------|
+| **9 serviços do cenário** | Logs de aplicação, rastreamentos, erros |
+| **Métricas de host** | CPU, memória, disco, rede para 3 hosts em nuvem |
+| **Métricas do Kubernetes** | Nó, pod, métricas de contêiner |
+| **Métricas + logs do Nginx** | Logs de acesso, logs de erro, spans de requisição |
+| **Logs do MySQL** | Logs de consulta lenta e erros |
+| **Logs de fluxo VPC** | Telemetria de fluxo de rede |
+| **Rastreamentos distribuídos** | Cadeias de requisições multi-serviço |
+
+---
+
+## Exploração #1 — Logs via ES|QL
+
+1. Na aba **Elastic Serverless** → **Discover**
+2. Mude para o modo **ES|QL** (botão no canto superior esquerdo)
+3. Execute esta consulta:
+
+```esql
+FROM logs*
+| WHERE @timestamp > NOW() - 5 MINUTES
+| KEEP service.name, body.text, severity_text, @timestamp
+| SORT @timestamp DESC
+| LIMIT 50
+```
+
+Confirme que os dados estão fluindo e filtre apenas erros:
+
+```esql
+FROM logs*
+| WHERE @timestamp > NOW() - 15 MINUTES
+| WHERE severity_text == "ERROR"
+| STATS error_count = COUNT(*) BY service.name
+| SORT error_count DESC
+```
+
+---
+
+## Exploração #2 — APM / Serviços
+
+1. Na aba **Elastic Serverless** → **Applications → Service inventory**
+2. Clique em qualquer serviço para ver latência, throughput e taxa de erros
+3. Abra uma transação para ver o **waterfall de rastreamento distribuído**
+
+---
+
+## Exploração #3 — Infraestrutura / Hosts
+
+1. Na aba **Elastic Serverless** → **Observability → Infrastructure**
+2. Você verá 3 hosts — um por provedor de nuvem:
+   - `claro-aws-core-01` (AWS us-east-1 — Mobile Core e Billing)
+   - `claro-gcp-digital-01` (GCP us-central1 — Serviços Digitais)
+   - `claro-azure-ops-01` (Azure eastus — Voz, IoT e NOC)
+3. Clique em um host para ver métricas de CPU, memória, disco e rede
+
+---
+
+## Exploração #4 — Consultas de Série Temporal com ES|QL
+
+### Saúde do core 5G em uma visão geral
+```esql
+TS metrics*
+| WHERE @timestamp > NOW() - 15 MINUTES
+| EVAL minuto = DATE_TRUNC(1 minute, @timestamp)
+| STATS
+    sessoes_5g     = AVG(mobile_core.active_sessions_5g),
+    latencia_pdu   = AVG(mobile_core.pdu_session_latency_ms)
+  BY minuto
+| SORT minuto DESC
+```
+
+### Detectar pico de latência OCS antes que assinantes percebam
+```esql
+TS metrics*
+| WHERE @timestamp > NOW() - 30 MINUTES
+| EVAL minuto = DATE_TRUNC(1 minute, @timestamp)
+| STATS latencia_ocs = AVG(billing_engine.ocs_ccr_latency_ms) BY minuto
+| EVAL status = CASE(
+    latencia_ocs > 2000, "🔴 CRÍTICO — Assinantes pré-pagos bloqueados",
+    latencia_ocs > 500,  "🟡 DEGRADADO — OCS respondendo lentamente",
+    "🟢 SAUDÁVEL"
+  )
+| SORT minuto DESC
+```
+
+---
+
+## Exploração #5 — Dashboards
+
+O implantador criou um **Dashboard Executivo** pré-configurado para o seu cenário:
+
+**Aba Elastic Serverless** → **Dashboards** → pesquise "Claro" (ou "Executive")
+
+✅ **Pronto para continuar quando** você tiver visto logs, rastreamentos ou métricas no Elastic Serverless e confirmado que os serviços estão saudáveis.
+
+</details>

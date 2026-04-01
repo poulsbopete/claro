@@ -167,3 +167,62 @@ A new case will appear automatically with:
 - Severity set to **High**
 
 ✅ **Ready to continue when** you can see a workflow execution and an auto-created case in Elastic Serverless.
+
+---
+
+<details>
+<summary>🇧🇷 <strong>Português — clique para expandir</strong></summary>
+
+# Injetar uma Falha e Ver o Elastic Detectá-la
+
+Acione uma falha no **Demo App** e observe o Elastic investigar e criar um caso automaticamente — sem intervenção humana.
+
+---
+
+## Passo 1 — Injetar uma Falha
+
+1. Abra a aba **Chaos Controller**
+2. Selecione qualquer canal de falha e clique em **Inject Fault**
+
+> **Recomendado:** Comece com o **Canal 1 — 5G SA Core Session Failure** para a demonstração telecom mais clara de ponta a ponta.
+
+Enquanto a falha se propaga, execute esta consulta em **Elastic Serverless → Discover → ES|QL** para acompanhar o pico de erros em tempo real:
+
+```esql
+FROM logs*
+| WHERE @timestamp > NOW() - 15 MINUTES
+| WHERE severity_text == "ERROR"
+| STATS errors = COUNT(*) BY service.name
+| SORT errors DESC
+```
+
+> **Dica:** Reexecute a cada 30 segundos após injetar a falha — você verá a contagem de erros do serviço afetado subir enquanto todos os outros permanecem estáveis.
+
+---
+
+## Passo 2 — Acompanhar a Execução do Workflow
+
+Na aba **Elastic Serverless**, vá para **Observability → Workflows**.
+
+Em 1–2 minutos após injetar a falha, o workflow **Claro NOC Significant Event Notification** mostrará uma execução recente. Clique nela para ver cada etapa:
+
+- **count_errors** — consulta ES|QL contando erros recentes do serviço afetado
+- **run_rca** — análise de causa raiz pelo agente de IA
+- **create_case** — caso Kibana criado com as descobertas da RCA
+
+Clique em **View Full Conversation** para abrir o histórico completo do agente de IA — você pode ver exatamente o que ele consultou, o que encontrou e por que chegou às suas conclusões. Você também pode digitar perguntas adicionais ou pedir ao agente que execute uma ação de remediação.
+
+---
+
+## Passo 3 — Revisar o Caso
+
+Vá para **Observability → Cases** (ou clique em **Cases** na navegação lateral).
+
+Um novo caso aparecerá automaticamente com:
+- O nome da falha e o serviço afetado no título
+- A análise de causa raiz do agente de IA na descrição
+- Severidade definida como **Alta**
+
+✅ **Pronto para continuar quando** você conseguir ver uma execução de workflow e um caso criado automaticamente no Elastic Serverless.
+
+</details>

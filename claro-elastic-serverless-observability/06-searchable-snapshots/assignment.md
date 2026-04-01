@@ -176,3 +176,93 @@ All data — regardless of age — is immediately visible and filterable.
 - [ ] The tier query returns both `hot` and `frozen` rows in a single result
 - [ ] The auditor query returns results for `data_export` / `privilege_escalation_attempt` on `payments-api`
 - [ ] You confirmed results came back in seconds — not after a rehydration queue
+
+---
+
+<details>
+<summary>🇧🇷 <strong>Português — clique para expandir</strong></summary>
+
+# Diferencial Competitivo 3: Snapshots Consultáveis
+
+## O Cenário
+
+Sua equipe de compliance recebeu uma solicitação de um auditor SOC 2:
+
+> *"Precisamos de todos os eventos `data_export` e `privilege_escalation_attempt` de qualquer usuário no serviço `payments-api` de **dois anos atrás**. Precisamos dos resultados em uma hora."*
+
+No Splunk: abra um ticket de reidratação. Aguarde.
+
+No Elastic: execute uma consulta.
+
+O script de configuração indexou 500 eventos de log de auditoria com data de **2 anos atrás** e 100 eventos recentes — ambos consultáveis no **mesmo padrão wildcard**, sem troca de camada.
+
+---
+
+## Passo 1: Confirmar que Ambas as Camadas São Consultáveis Juntas
+
+Abra a aba **Elastic Serverless** → **Discover → ES|QL**. Defina o intervalo de tempo para **Últimos 3 anos** e execute:
+
+```esql
+FROM lab6-audit-logs-*
+| STATS doc_count = COUNT(),
+        mais_antigo = MIN(@timestamp),
+        mais_recente = MAX(@timestamp)
+  BY tier
+| SORT mais_antigo ASC
+```
+
+> Documentos das camadas `hot` e `frozen` aparecem no **mesmo resultado de consulta**. Não houve etapa de reidratação. Este é o momento que clientes do Splunk desejavam ter.
+
+---
+
+## Passo 2: Responder à Consulta do Auditor
+
+Execute a consulta exata que a equipe de compliance precisa — diretamente contra dados de arquivo de dois anos atrás:
+
+```esql
+FROM lab6-audit-logs-*
+| WHERE `event.action` IN ("data_export", "privilege_escalation_attempt")
+  AND `destination.service` == "payments-api"
+| KEEP @timestamp, `user.name`, `user.id`, `event.action`,
+       `event.outcome`, `source.ip`, `compliance.framework`
+| SORT @timestamp DESC
+```
+
+---
+
+## Passo 3: Relatório de Escalada de Privilégios Multi-Camada
+
+Um relatório de compliance de 2 anos em uma única consulta — combinando dados de arquivo e recentes:
+
+```esql
+FROM lab6-audit-logs-*
+| WHERE `event.action` == "privilege_escalation_attempt"
+| STATS tentativas = COUNT(),
+        servicos   = COUNT_DISTINCT(`destination.service`)
+  BY `user.name`
+| SORT tentativas DESC
+| LIMIT 20
+```
+
+> No Splunk: (1) reidratar dados de arquivo, (2) aguardar, (3) executar SPL, (4) consultar o Splunk ES separadamente para contexto de segurança. No Elastic: uma consulta, um resultado, uma plataforma.
+
+---
+
+## Passo 4: Verificar no Kibana Discover
+
+1. Em **Elastic Serverless** → **Discover**, clique em **Open** → selecione a data view `Lab 6 - Audit Logs`
+2. Defina o intervalo de tempo para **Últimos 3 anos**
+3. Observe que documentos de 2 anos atrás e de hoje aparecem na mesma linha do tempo
+4. Adicione filtro: `event.action : privilege_escalation_attempt`
+
+Todos os dados — independentemente da idade — são imediatamente visíveis e filtráveis.
+
+---
+
+## ✅ Concluído Quando:
+
+- [ ] A consulta por camada retorna linhas `hot` e `frozen` em um único resultado
+- [ ] A consulta do auditor retorna resultados de `data_export` / `privilege_escalation_attempt` no `payments-api`
+- [ ] Você confirmou que os resultados chegaram em segundos — e não após uma fila de reidratação
+
+</details>

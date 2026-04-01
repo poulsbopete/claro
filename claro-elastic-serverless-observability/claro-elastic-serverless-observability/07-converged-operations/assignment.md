@@ -179,3 +179,108 @@ FROM logs.otel, logs.otel.*
 - [ ] The detection rule in Kibana Security shows `lab7-attack-logs-*` as its target index
 - [ ] A security alert is visible in Security → Alerts
 - [ ] You confirmed no separate SIEM index or double-ingest was required
+
+---
+
+<details>
+<summary>🇧🇷 <strong>Português — clique para expandir</strong></summary>
+
+# Diferencial Competitivo 4: Operações Convergidas
+
+## O Cenário
+
+O script de configuração injetou um **padrão de ataque de força bruta** em `lab7-attack-logs-*` — estruturado exatamente como seus logs de observabilidade da Claro:
+
+- **50 requisições normais de serviço** (tráfego de linha de base de `payments-api`, `billing-engine`, etc.)
+- **15 falhas de autenticação** do IP `198.51.100.42` em 5 minutos
+- **1 login bem-sucedido** no final — a força bruta teve sucesso
+- **Usuário alvo:** `admin` em `/api/auth/login`
+
+Uma regra de detecção de segurança do Kibana foi pré-criada apontando para este índice.
+
+---
+
+## Passo 1: Confirmar que o Ataque Está no Seu Índice de Observabilidade
+
+Abra a aba **Elastic Serverless** → **Discover → ES|QL**:
+
+```esql
+FROM lab7-attack-logs-*
+| WHERE `source.ip` == "198.51.100.42"
+| KEEP @timestamp, `log.level`, message, `event.action`, `event.outcome`,
+       `http.response.status_code`
+| SORT @timestamp ASC
+```
+
+> **Este é o insight crítico:** Você está consultando `lab7-attack-logs-*` — o **mesmo índice de observabilidade dos seus logs APM.** Sem ingestão SIEM separada. Sem duplicação de dados. Sem custo adicional.
+
+---
+
+## Passo 2: Executar a Lógica de Detecção de Força Bruta
+
+Esta é a lógica subjacente à sua regra de detecção:
+
+```esql
+FROM lab7-attack-logs-*
+| WHERE @timestamp > NOW() - 15 minutes
+  AND `http.response.status_code` == 401
+| STATS falhas = COUNT(),
+        endpoints = COUNT_DISTINCT(`url.path`)
+  BY `source.ip`, `user.name`
+| WHERE falhas >= 5
+| SORT falhas DESC
+```
+
+---
+
+## Passo 3: Ver a Regra de Detecção no Kibana Security
+
+1. Na aba **Elastic Serverless** navegue para **Security → Rules → Detection Rules**
+2. Encontre **"[Lab 7] Brute Force: Auth Failures on Observability Logs"**
+3. Confirme:
+   - Status: **Habilitado**
+   - Padrão de índice: `lab7-attack-logs-*` ← seu índice de observabilidade, não um índice específico de SIEM
+   - Mapeamento MITRE ATT&CK: `T1110 - Brute Force`
+
+> Se a regra não foi criada automaticamente, crie manualmente: **Create Rule → Threshold** → índice `lab7-attack-logs-*`, consulta `http.response.status_code: 401`, limite ≥ 5 agrupado por `source.ip`.
+
+---
+
+## Passo 4: Ver o Alerta Gerado
+
+1. Navegue para **Security → Alerts**
+2. Clique em qualquer alerta para expandi-lo
+3. Observe o índice de origem nos detalhes do alerta: `lab7-attack-logs-*`
+4. Clique em **Investigate in Timeline** — você vê os eventos de log brutos diretamente
+
+> No Splunk ES, este alerta referenciaria dados de um armazenamento SIEM normalizado pelo CIM, separado dos seus dados de observabilidade. No Elastic, o alerta aponta diretamente para o **documento de log de observabilidade original.**
+
+---
+
+## Passo 5: Pivotar para os Streams Claro em Tempo Real
+
+Agora veja a mesma capacidade nos seus dados de observabilidade **em tempo real** da Claro:
+
+```esql
+FROM logs.otel, logs.otel.*
+| WHERE severity_text == "ERROR"
+  AND @timestamp > NOW() - 10 minutes
+| STATS erros = COUNT(),
+        servicos = COUNT_DISTINCT(service.name)
+  BY `service.name`
+| SORT erros DESC
+| LIMIT 10
+```
+
+> **A mesma consulta que alimenta seus dashboards de SRE pode acionar uma regra de detecção de segurança.** Sem segunda cópia de dados necessária.
+
+---
+
+## ✅ Concluído Quando:
+
+- [ ] A consulta ES|QL confirma que os eventos de força bruta existem em `lab7-attack-logs-*` (o índice de observabilidade)
+- [ ] A regra de detecção no Kibana Security mostra `lab7-attack-logs-*` como índice alvo
+- [ ] Um alerta de segurança está visível em Security → Alerts
+- [ ] Você confirmou que nenhum índice SIEM separado ou ingestão dupla foi necessário
+
+</details>

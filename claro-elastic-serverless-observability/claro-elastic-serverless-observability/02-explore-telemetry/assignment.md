@@ -8,6 +8,15 @@ teaser: Navigate Elastic Serverless to see logs, distributed traces, and host me
 notes:
 - type: text
   contents: |
+    ## Workshop Slides
+
+    Follow along with the full presentation:
+
+    **[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**
+
+    *(Opens in a new tab)*
+- type: text
+  contents: |
     ## Lab 2 — Explore Live OpenTelemetry Data
 
     **By the end of this challenge you will:**
@@ -15,7 +24,7 @@ notes:
     - ✅ Query live logs with ES|QL in Discover
     - ✅ View distributed traces and service maps in APM
     - ✅ Inspect host metrics across 3 simulated cloud providers
-    - ✅ Explore the Executive Dashboard for the Fanatics scenario
+    - ✅ Explore the Executive Dashboard for the Claro scenario
     - ✅ Run time-series ES|QL queries against live metric streams
 
     **Your data is real.** Every log, trace, and metric is generated fresh and shipped via OTLP directly to Elastic — no recordings, no synthetic replay.
@@ -37,7 +46,7 @@ notes:
     ## What's Generating Telemetry
 
     **9 scenario microservices** (application logs + traces):
-    Auction Engine · Card Printing · Payment Processing · Fan Engagement · Loyalty Rewards · Streaming CDN · Navigation · Fraud Detection · Fulfillment
+    Mobile Core · Billing Engine · SMS Gateway · Customer Portal · Content Delivery · Network Analytics · Voice Platform · IoT Connect · NOC Dashboard
 
     **Background generators** (infrastructure telemetry):
     - 3 cloud hosts (AWS, GCP, Azure) — CPU, memory, disk, network
@@ -61,12 +70,12 @@ notes:
     | SORT errors DESC
     ```
 
-    **Latency trend over time:**
+    **5G PDU session latency over time:**
     ```
     TS metrics*
     | WHERE @timestamp > NOW() - 30 MINUTES
     | EVAL minute = DATE_TRUNC(1 minute, @timestamp)
-    | STATS avg_latency = AVG(auction.bid_latency_ms) BY minute
+    | STATS avg_pdu_latency = AVG(mobile_core.pdu_session_latency_ms) BY minute
     | SORT minute DESC
     ```
 tabs:
@@ -156,7 +165,7 @@ FROM logs*
 ```
 
 **Things to notice:**
-- `service.name`: `auction-engine`, `card-printing-system`, `digital-marketplace`, `packaging-fulfillment`, `cloud-inventory-scanner`, `nginx-proxy`, `mysql-primary`, and more
+- `service.name`: `mobile-core`, `billing-engine`, `sms-gateway`, `customer-portal`, `content-delivery`, `network-analytics`, `voice-platform`, `iot-connect`, `noc-dashboard`
 - `severity_text`: `INFO`, `WARN`, `ERROR`
 - `body.text` contains the raw log message and error type
 
@@ -176,9 +185,9 @@ FROM logs*
 
 1. In the **Elastic Serverless** tab → **Observability → Infrastructure**
 2. You should see 3 hosts — one per cloud provider:
-   - `fanatics-aws-host-01`
-   - `fanatics-gcp-host-01`
-   - `fanatics-azure-host-01`
+   - `claro-aws-core-01` (AWS us-east-1 — Mobile Core & Billing)
+   - `claro-gcp-digital-01` (GCP us-central1 — Digital Services)
+   - `claro-azure-ops-01` (Azure eastus — Voice, IoT & NOC)
 3. Click a host to see CPU, memory, disk, and network metrics
 
 > **Note:** If hosts don't appear immediately, wait 1–2 minutes for the host metrics generator to send its first batch.
@@ -189,63 +198,66 @@ FROM logs*
 
 In the **Elastic Serverless** tab → **Discover** → **ES|QL** mode, try these queries against the live metrics stream.
 
-### Auction health at a glance
+### 5G core health at a glance
 ```esql
 TS metrics*
 | WHERE @timestamp > NOW() - 15 MINUTES
 | EVAL minute = DATE_TRUNC(1 minute, @timestamp)
 | STATS
-    active_auctions = AVG(auction.active_auctions),
-    bid_latency_ms  = AVG(auction.bid_latency_ms),
-    bids_per_min    = AVG(auction.bids_per_min),
-    websocket_conns = AVG(auction.websocket_connections)
+    sessions_5g    = AVG(mobile_core.active_sessions_5g),
+    sessions_lte   = AVG(mobile_core.active_sessions_lte),
+    pdu_latency_ms = AVG(mobile_core.pdu_session_latency_ms),
+    ho_success_pct = AVG(mobile_core.handover_success_rate)
   BY minute
 | SORT minute DESC
 ```
 
-### Spot a latency spike before users notice
+### Spot an OCS billing latency spike before subscribers notice
 ```esql
 TS metrics*
 | WHERE @timestamp > NOW() - 30 MINUTES
 | EVAL minute = DATE_TRUNC(1 minute, @timestamp)
-| STATS avg_latency = AVG(auction.bid_latency_ms) BY minute
+| STATS avg_ocs_latency = AVG(billing_engine.ocs_ccr_latency_ms) BY minute
 | EVAL status = CASE(
-    avg_latency > 45, "🔴 CRITICAL",
-    avg_latency > 30, "🟡 DEGRADED",
+    avg_ocs_latency > 2000, "🔴 CRITICAL — Prepaid subscribers blocked",
+    avg_ocs_latency > 500,  "🟡 DEGRADED — OCS responding slowly",
     "🟢 HEALTHY"
   )
 | SORT minute DESC
 ```
 
-### Card printing throughput vs queue depth
+### CDN cache hit rate vs origin load (Claro TV)
 ```esql
 TS metrics*
 | WHERE @timestamp > NOW() - 20 MINUTES
 | EVAL minute = DATE_TRUNC(1 minute, @timestamp)
 | STATS
-    queue_depth    = AVG(card_printing.queue_depth),
-    throughput     = AVG(card_printing.throughput),
-    substrate_temp = AVG(card_printing.substrate_temp)
+    cache_hit_pct = AVG(content_delivery.cache_hit_rate),
+    origin_rps    = AVG(content_delivery.origin_rps),
+    rebuffer_pct  = AVG(content_delivery.video_rebuffer_rate)
   BY minute
-| EVAL backlog_ratio = ROUND(queue_depth / throughput, 2)
+| EVAL cdn_health = CASE(
+    cache_hit_pct < 30, "🔴 PURGE STORM — origin overloaded",
+    cache_hit_pct < 70, "🟡 DEGRADED",
+    "🟢 HEALTHY"
+  )
 | SORT minute DESC
 ```
 
-### Multi-cloud compliance drift
+### Multi-cloud voice trunk, IoT broker, and NOC alert rate
 ```esql
 TS metrics*
 | WHERE @timestamp > NOW() - 30 MINUTES
 | EVAL bucket5m = DATE_TRUNC(5 minutes, @timestamp)
 | STATS
-    aws_compliance   = AVG(cloud_inventory.aws.compliance_pct),
-    gcp_compliance   = AVG(cloud_inventory.gcp.compliance_pct),
-    azure_compliance = AVG(cloud_inventory.azure.compliance_pct)
+    sip_trunk_util   = AVG(voice_platform.sip_trunk_utilization_pct),
+    mqtt_connections = AVG(iot_connect.mqtt_connections),
+    noc_alert_rate   = AVG(noc_dashboard.alert_rate_per_min)
   BY bucket5m
-| EVAL lowest = LEAST(aws_compliance, gcp_compliance, azure_compliance)
-| EVAL at_risk_cloud = CASE(
-    lowest == aws_compliance, "AWS",
-    lowest == gcp_compliance, "GCP",
-    "Azure"
+| EVAL voice_risk = CASE(
+    sip_trunk_util > 90, "🔴 SIP SATURATED",
+    sip_trunk_util > 70, "🟡 HIGH LOAD",
+    "🟢 OK"
   )
 | SORT bucket5m DESC
 ```
@@ -271,6 +283,116 @@ FROM logs*
 
 The deployer created an **Executive Dashboard** pre-configured for your scenario. Find it in:
 
-**Elastic Serverless** tab → **Dashboards** → search "Fanatics" (or "Executive")
+**Elastic Serverless** tab → **Dashboards** → search "Claro" (or "Executive")
 
 ✅ **Ready to continue when** you've seen logs, traces, or metrics in Elastic Serverless and confirmed services are healthy.
+
+---
+
+<details>
+<summary>🇧🇷 <strong>Português — clique para expandir</strong></summary>
+
+# Explorar Telemetria OpenTelemetry em Tempo Real
+
+Com o cenário em execução, vamos explorar os dados que fluem para o Elastic. Abra a aba **Elastic Serverless**.
+
+---
+
+## O Que Está Gerando Telemetria
+
+| Gerador | O Que Produz |
+|---------|-------------|
+| **9 serviços do cenário** | Logs de aplicação, rastreamentos, erros |
+| **Métricas de host** | CPU, memória, disco, rede para 3 hosts em nuvem |
+| **Métricas do Kubernetes** | Nó, pod, métricas de contêiner |
+| **Métricas + logs do Nginx** | Logs de acesso, logs de erro, spans de requisição |
+| **Logs do MySQL** | Logs de consulta lenta e erros |
+| **Logs de fluxo VPC** | Telemetria de fluxo de rede |
+| **Rastreamentos distribuídos** | Cadeias de requisições multi-serviço |
+
+---
+
+## Exploração #1 — Logs via ES|QL
+
+1. Na aba **Elastic Serverless** → **Discover**
+2. Mude para o modo **ES|QL** (botão no canto superior esquerdo)
+3. Execute esta consulta:
+
+```esql
+FROM logs*
+| WHERE @timestamp > NOW() - 5 MINUTES
+| KEEP service.name, body.text, severity_text, @timestamp
+| SORT @timestamp DESC
+| LIMIT 50
+```
+
+Confirme que os dados estão fluindo e filtre apenas erros:
+
+```esql
+FROM logs*
+| WHERE @timestamp > NOW() - 15 MINUTES
+| WHERE severity_text == "ERROR"
+| STATS error_count = COUNT(*) BY service.name
+| SORT error_count DESC
+```
+
+---
+
+## Exploração #2 — APM / Serviços
+
+1. Na aba **Elastic Serverless** → **Applications → Service inventory**
+2. Clique em qualquer serviço para ver latência, throughput e taxa de erros
+3. Abra uma transação para ver o **waterfall de rastreamento distribuído**
+
+---
+
+## Exploração #3 — Infraestrutura / Hosts
+
+1. Na aba **Elastic Serverless** → **Observability → Infrastructure**
+2. Você verá 3 hosts — um por provedor de nuvem:
+   - `claro-aws-core-01` (AWS us-east-1 — Mobile Core e Billing)
+   - `claro-gcp-digital-01` (GCP us-central1 — Serviços Digitais)
+   - `claro-azure-ops-01` (Azure eastus — Voz, IoT e NOC)
+3. Clique em um host para ver métricas de CPU, memória, disco e rede
+
+---
+
+## Exploração #4 — Consultas de Série Temporal com ES|QL
+
+### Saúde do core 5G em uma visão geral
+```esql
+TS metrics*
+| WHERE @timestamp > NOW() - 15 MINUTES
+| EVAL minuto = DATE_TRUNC(1 minute, @timestamp)
+| STATS
+    sessoes_5g     = AVG(mobile_core.active_sessions_5g),
+    latencia_pdu   = AVG(mobile_core.pdu_session_latency_ms)
+  BY minuto
+| SORT minuto DESC
+```
+
+### Detectar pico de latência OCS antes que assinantes percebam
+```esql
+TS metrics*
+| WHERE @timestamp > NOW() - 30 MINUTES
+| EVAL minuto = DATE_TRUNC(1 minute, @timestamp)
+| STATS latencia_ocs = AVG(billing_engine.ocs_ccr_latency_ms) BY minuto
+| EVAL status = CASE(
+    latencia_ocs > 2000, "🔴 CRÍTICO — Assinantes pré-pagos bloqueados",
+    latencia_ocs > 500,  "🟡 DEGRADADO — OCS respondendo lentamente",
+    "🟢 SAUDÁVEL"
+  )
+| SORT minuto DESC
+```
+
+---
+
+## Exploração #5 — Dashboards
+
+O implantador criou um **Dashboard Executivo** pré-configurado para o seu cenário:
+
+**Aba Elastic Serverless** → **Dashboards** → pesquise "Claro" (ou "Executive")
+
+✅ **Pronto para continuar quando** você tiver visto logs, rastreamentos ou métricas no Elastic Serverless e confirmado que os serviços estão saudáveis.
+
+</details>
