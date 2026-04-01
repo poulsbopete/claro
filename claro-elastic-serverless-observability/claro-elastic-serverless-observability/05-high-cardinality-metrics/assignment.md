@@ -9,74 +9,56 @@ teaser: Elastic analyzes your live data and suggests routing rules automatically
   independent retention and processing rules — zero Collector restarts.
 notes:
 - type: text
-  contents: |
-    ## Workshop Slides
-
-    Follow along with the full presentation:
-
-    **[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**
-
-    *(Opens in a new tab)*
-
-    ***
-
-    🇧🇷 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**
-
-    *(Abre em uma nova aba)*
+  contents: "## Workshop Slides\n\nFollow along with the full presentation:\n\n**[→
+    Open Workshop Slides](https://poulsbopete.github.io/claro/)**\n\n*(Opens in a
+    new tab)*\n\n***\n\n\U0001F1E7\U0001F1F7 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**\n\n*(Abre
+    em uma nova aba)*\n"
 - type: text
-  contents: |
-    ## How Splunk Forces a Cardinality Trade-off
-
-    In Splunk, every unique metric dimension combination is a billable **Metric Time Series (MTS)**. High-cardinality fields like `pod.uid` or `container.id` multiply your bill with every deployment. The only cost lever is at the **OpenTelemetry Collector** — drop the field globally, permanently, before it reaches Splunk.
-
-    **Elastic Streams gives you control inside the platform.** Instead of dropping fields at the agent, you route data into per-service streams — each with its own retention policy and field-level processing rules — without touching a single agent config.
-
-    ***
-
-    🇧🇷 **Como o Splunk Força uma Troca de Cardinalidade**
-
-    No Splunk, cada combinação única de dimensões de métrica é uma **Metric Time Series (MTS)** faturável. Campos de alta cardinalidade como `pod.uid` ou `container.id` multiplicam sua fatura a cada implantação. O único controle de custo está no **Collector OpenTelemetry** — remover o campo globalmente, permanentemente, antes de chegar ao Splunk.
-
-    **O Elastic Streams dá controle dentro da plataforma.** Em vez de remover campos no agente, você roteia dados para streams por serviço — cada um com sua própria política de retenção e regras de processamento no nível de campo — sem tocar em nenhuma configuração de agente.
+  contents: "## How Splunk Forces a Cardinality Trade-off\n\nIn Splunk, every unique
+    metric dimension combination is a billable **Metric Time Series (MTS)**. High-cardinality
+    fields like `pod.uid` or `container.id` multiply your bill with every deployment.
+    The only cost lever is at the **OpenTelemetry Collector** — drop the field globally,
+    permanently, before it reaches Splunk.\n\n**Elastic Streams gives you control
+    inside the platform.** Instead of dropping fields at the agent, you route data
+    into per-service streams — each with its own retention policy and field-level
+    processing rules — without touching a single agent config.\n\n***\n\n\U0001F1E7\U0001F1F7
+    **Como o Splunk Força uma Troca de Cardinalidade**\n\nNo Splunk, cada combinação
+    única de dimensões de métrica é uma **Metric Time Series (MTS)** faturável. Campos
+    de alta cardinalidade como `pod.uid` ou `container.id` multiplicam sua fatura
+    a cada implantação. O único controle de custo está no **Collector OpenTelemetry**
+    — remover o campo globalmente, permanentemente, antes de chegar ao Splunk.\n\n**O
+    Elastic Streams dá controle dentro da plataforma.** Em vez de remover campos no
+    agente, você roteia dados para streams por serviço — cada um com sua própria política
+    de retenção e regras de processamento no nível de campo — sem tocar em nenhuma
+    configuração de agente.\n"
 - type: text
-  contents: |
-    ## What You'll Do
-
-    Elastic Streams **analyzes your live data** and automatically suggests how to partition it. For the Claro scenario, it detects that `logs.otel` contains logs from 9 different services and suggests creating child streams like:
-
-    - `logs.otel.billing-engine` — billing and OCS charging events
-    - `logs.otel.mobile-core` — 5G/4G core network events
-    - `logs.otel.voice-platform` — SIP/IMS events
-    - (and 6 more...)
-
-    Each child stream is **completely independent**: set 7-day retention on `billing-engine` for fast incident triage, 90-day on `network-analytics` for capacity trending. Add a `drop_field` rule to one without affecting the others.
-
-    | Capability | Elastic Streams | Splunk |
-    |------------|----------------|--------|
-    | Auto-detect routing candidates | ✅ Analyzes live data | ❌ Manual pipeline config |
-    | Per-service retention | ✅ Each child independent | ❌ Global DDAA policy |
-    | Drop fields per-stream | ✅ Processing rules | ❌ Global Collector change |
-    | Zero agent changes | ✅ | ❌ Requires Collector restart |
-
-    ***
-
-    🇧🇷 **O Que Você Vai Fazer**
-
-    O Elastic Streams **analisa seus dados em tempo real** e sugere automaticamente como particioná-los. Para o cenário Claro, ele detecta que `logs.otel` contém logs de 9 serviços diferentes e sugere a criação de streams filhos como:
-
-    - `logs.otel.billing-engine` — eventos de cobrança e OCS
-    - `logs.otel.mobile-core` — eventos do core de rede 5G/4G
-    - `logs.otel.voice-platform` — eventos SIP/IMS
-    - (e mais 6...)
-
-    Cada stream filho é **completamente independente**: defina 7 dias de retenção em `billing-engine` para triagem rápida de incidentes, 90 dias em `network-analytics` para tendências de capacidade. Adicione uma regra `drop_field` a um sem afetar os outros.
-
-    | Capacidade | Elastic Streams | Splunk |
-    |------------|----------------|--------|
-    | Detectar candidatos automaticamente | ✅ Analisa dados em tempo real | ❌ Config manual no pipeline |
-    | Retenção por serviço | ✅ Cada filho independente | ❌ Política DDAA global |
-    | Remover campos por stream | ✅ Regras de processamento | ❌ Mudança global no Collector |
-    | Zero mudanças no agente | ✅ | ❌ Requer reinicialização do Collector |
+  contents: "## What You'll Do\n\nElastic Streams **analyzes your live data** and
+    automatically suggests how to partition it. For the Claro scenario, it detects
+    that `logs.otel` contains logs from 9 different services and suggests creating
+    child streams like:\n\n- `logs.otel.billing-engine` — billing and OCS charging
+    events\n- `logs.otel.mobile-core` — 5G/4G core network events\n- `logs.otel.voice-platform`
+    — SIP/IMS events\n- (and 6 more...)\n\nEach child stream is **completely independent**:
+    set 7-day retention on `billing-engine` for fast incident triage, 90-day on `network-analytics`
+    for capacity trending. Add a `drop_field` rule to one without affecting the others.\n\n|
+    Capability | Elastic Streams | Splunk |\n|------------|----------------|--------|\n|
+    Auto-detect routing candidates | ✅ Analyzes live data | ❌ Manual pipeline config
+    |\n| Per-service retention | ✅ Each child independent | ❌ Global DDAA policy |\n|
+    Drop fields per-stream | ✅ Processing rules | ❌ Global Collector change |\n| Zero
+    agent changes | ✅ | ❌ Requires Collector restart |\n\n***\n\n\U0001F1E7\U0001F1F7
+    **O Que Você Vai Fazer**\n\nO Elastic Streams **analisa seus dados em tempo real**
+    e sugere automaticamente como particioná-los. Para o cenário Claro, ele detecta
+    que `logs.otel` contém logs de 9 serviços diferentes e sugere a criação de streams
+    filhos como:\n\n- `logs.otel.billing-engine` — eventos de cobrança e OCS\n- `logs.otel.mobile-core`
+    — eventos do core de rede 5G/4G\n- `logs.otel.voice-platform` — eventos SIP/IMS\n-
+    (e mais 6...)\n\nCada stream filho é **completamente independente**: defina 7
+    dias de retenção em `billing-engine` para triagem rápida de incidentes, 90 dias
+    em `network-analytics` para tendências de capacidade. Adicione uma regra `drop_field`
+    a um sem afetar os outros.\n\n| Capacidade | Elastic Streams | Splunk |\n|------------|----------------|--------|\n|
+    Detectar candidatos automaticamente | ✅ Analisa dados em tempo real | ❌ Config
+    manual no pipeline |\n| Retenção por serviço | ✅ Cada filho independente | ❌ Política
+    DDAA global |\n| Remover campos por stream | ✅ Regras de processamento | ❌ Mudança
+    global no Collector |\n| Zero mudanças no agente | ✅ | ❌ Requer reinicialização
+    do Collector |\n"
 tabs:
 - id: addwrseojmxt
   title: Demo App
@@ -182,10 +164,12 @@ Now click **`logs.otel.mobile-core`**:
 Click **`logs.otel.mobile-core`** → **Processing** tab:
 
 1. Click **Add processor**
-2. Select **Drop field**
-3. Enter field name: `kubernetes.pod.uid`
-4. Leave condition blank (applies to all documents)
+2. Under **Remove**, select **Remove** (the single-field remover — not "Remove by prefix" or "Drop document")
+3. In the **Field** box that appears, type: `kubernetes.pod.uid`
+4. Leave the condition blank so it applies to all documents
 5. Click **Save**
+
+> **Tip:** The processor menu has three sections — "Drop document" removes the whole event, "Remove by prefix" removes a group of fields, and **"Remove"** removes a single named field. You want **Remove**.
 
 This drops `kubernetes.pod.uid` **only from the mobile-core stream** — the billing-engine stream still retains it for pod-level incident correlation.
 
@@ -293,10 +277,12 @@ Agora clique em **`logs.otel.mobile-core`**:
 Clique em **`logs.otel.mobile-core`** → aba **Processing**:
 
 1. Clique em **Add processor**
-2. Selecione **Drop field**
-3. Digite o nome do campo: `kubernetes.pod.uid`
-4. Deixe a condição em branco (aplica a todos os documentos)
+2. Em **Remove**, selecione **Remove** (removedor de campo único — não "Remove by prefix" nem "Drop document")
+3. No campo **Field** que aparece, digite: `kubernetes.pod.uid`
+4. Deixe a condição em branco para que se aplique a todos os documentos
 5. Clique em **Save**
+
+> **Dica:** O menu de processadores tem três seções — "Drop document" remove o evento inteiro, "Remove by prefix" remove um grupo de campos, e **"Remove"** remove um único campo pelo nome. Você quer **Remove**.
 
 Isso remove `kubernetes.pod.uid` **apenas do stream mobile-core** — o stream billing-engine ainda o mantém para correlação de incidentes no nível do pod.
 

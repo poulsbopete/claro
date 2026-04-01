@@ -7,76 +7,50 @@ teaser: Enable a security detection rule on logs you already ingested. No separa
   Splunk ES license. No second ingest pipeline. Zero extra cost.
 notes:
 - type: text
-  contents: |
-    ## Workshop Slides
-
-    Follow along with the full presentation:
-
-    **[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**
-
-    *(Opens in a new tab)*
-
-    ***
-
-    🇧🇷 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**
-
-    *(Abre em uma nova aba)*
+  contents: "## Workshop Slides\n\nFollow along with the full presentation:\n\n**[→
+    Open Workshop Slides](https://poulsbopete.github.io/claro/)**\n\n*(Opens in a
+    new tab)*\n\n***\n\n\U0001F1E7\U0001F1F7 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**\n\n*(Abre
+    em uma nova aba)*\n"
 - type: text
-  contents: |
-    ## The Splunk Enterprise Security Tax
-
-    To get SIEM detection on application logs in Splunk, you need:
-
-    - **Splunk Cloud** — for observability (logs, metrics)
-    - **Splunk Enterprise Security** — a separate, expensive product with its own license
-    - **CIM normalization** — your logs must be mapped to Splunk's Common Information Model
-    - **Double ingest** — data typically flows into both Splunk Cloud *and* Splunk ES separately
-
-    The result: SIEM coverage on app logs costs approximately **2× the ingest cost** plus an additional ES license plus CIM mapping work.
-
-    **In Elastic, observability data is security data.** The same Elasticsearch index that powers your APM dashboards can be targeted by Elastic Security detection rules — no additional ingest, no second license, no CIM.
-
-    ***
-
-    🇧🇷 **O Custo Adicional do Splunk Enterprise Security**
-
-    Para obter detecção SIEM em logs de aplicação no Splunk, você precisa:
-
-    - **Splunk Cloud** — para observabilidade (logs, métricas)
-    - **Splunk Enterprise Security** — um produto separado e caro com sua própria licença
-    - **Normalização CIM** — seus logs devem ser mapeados para o Common Information Model do Splunk
-    - **Ingestão dupla** — os dados geralmente fluem tanto para o Splunk Cloud *quanto* para o Splunk ES separadamente
-
-    O resultado: a cobertura SIEM em logs de aplicação custa aproximadamente **2× o custo de ingestão** mais uma licença ES adicional mais trabalho de mapeamento CIM.
-
-    **No Elastic, dados de observabilidade são dados de segurança.** O mesmo índice Elasticsearch que alimenta seus dashboards APM pode ser alvo de regras de detecção do Elastic Security — sem ingestão adicional, sem segunda licença, sem CIM.
+  contents: "## The Splunk Enterprise Security Tax\n\nTo get SIEM detection on application
+    logs in Splunk, you need:\n\n- **Splunk Cloud** — for observability (logs, metrics)\n-
+    **Splunk Enterprise Security** — a separate, expensive product with its own license\n-
+    **CIM normalization** — your logs must be mapped to Splunk's Common Information
+    Model\n- **Double ingest** — data typically flows into both Splunk Cloud *and*
+    Splunk ES separately\n\nThe result: SIEM coverage on app logs costs approximately
+    **2× the ingest cost** plus an additional ES license plus CIM mapping work.\n\n**In
+    Elastic, observability data is security data.** The same Elasticsearch index that
+    powers your APM dashboards can be targeted by Elastic Security detection rules
+    — no additional ingest, no second license, no CIM.\n\n***\n\n\U0001F1E7\U0001F1F7
+    **O Custo Adicional do Splunk Enterprise Security**\n\nPara obter detecção SIEM
+    em logs de aplicação no Splunk, você precisa:\n\n- **Splunk Cloud** — para observabilidade
+    (logs, métricas)\n- **Splunk Enterprise Security** — um produto separado e caro
+    com sua própria licença\n- **Normalização CIM** — seus logs devem ser mapeados
+    para o Common Information Model do Splunk\n- **Ingestão dupla** — os dados geralmente
+    fluem tanto para o Splunk Cloud *quanto* para o Splunk ES separadamente\n\nO resultado:
+    a cobertura SIEM em logs de aplicação custa aproximadamente **2× o custo de ingestão**
+    mais uma licença ES adicional mais trabalho de mapeamento CIM.\n\n**No Elastic,
+    dados de observabilidade são dados de segurança.** O mesmo índice Elasticsearch
+    que alimenta seus dashboards APM pode ser alvo de regras de detecção do Elastic
+    Security — sem ingestão adicional, sem segunda licença, sem CIM.\n"
 - type: text
-  contents: |
-    ## The Elastic Converged Operations Advantage
-
-    | Capability | Elastic | Splunk |
-    |------------|---------|--------|
-    | Detection rules on observability data | ✅ Same index | ❌ Separate product |
-    | Extra ingest for SIEM coverage | ✅ Zero | ❌ Full double-ingest |
-    | CIM / normalization required | ✅ None (ECS native) | ❌ CIM mapping required |
-    | Alert → trace correlation | ✅ Same platform | ❌ Cross-product navigation |
-    | Single license for obs + security | ✅ | ❌ Cloud + ES licenses |
-
-    > **Splunk's model creates a financial disincentive to security coverage.** Every log that could be a security signal costs twice as much to protect.
-
-    ***
-
-    🇧🇷 **A Vantagem das Operações Convergidas do Elastic**
-
-    | Capacidade | Elastic | Splunk |
-    |------------|---------|--------|
-    | Regras de detecção em dados de observabilidade | ✅ Mesmo índice | ❌ Produto separado |
-    | Ingestão extra para SIEM | ✅ Zero | ❌ Ingestão dupla completa |
-    | Normalização necessária | ✅ Nenhuma (ECS nativo) | ❌ Mapeamento CIM |
-    | Alerta → correlação de rastreamento | ✅ Mesma plataforma | ❌ Navegação entre produtos |
-    | Licença única para obs + segurança | ✅ | ❌ Licenças Cloud + ES |
-
-    > **O modelo do Splunk cria um desincentivo financeiro para cobertura de segurança.** Cada log que poderia ser um sinal de segurança custa o dobro para proteger.
+  contents: "## The Elastic Converged Operations Advantage\n\n| Capability | Elastic
+    | Splunk |\n|------------|---------|--------|\n| Detection rules on observability
+    data | ✅ Same index | ❌ Separate product |\n| Extra ingest for SIEM coverage |
+    ✅ Zero | ❌ Full double-ingest |\n| CIM / normalization required | ✅ None (ECS
+    native) | ❌ CIM mapping required |\n| Alert → trace correlation | ✅ Same platform
+    | ❌ Cross-product navigation |\n| Single license for obs + security | ✅ | ❌ Cloud
+    + ES licenses |\n\n> **Splunk's model creates a financial disincentive to security
+    coverage.** Every log that could be a security signal costs twice as much to protect.\n\n***\n\n\U0001F1E7\U0001F1F7
+    **A Vantagem das Operações Convergidas do Elastic**\n\n| Capacidade | Elastic
+    | Splunk |\n|------------|---------|--------|\n| Regras de detecção em dados de
+    observabilidade | ✅ Mesmo índice | ❌ Produto separado |\n| Ingestão extra para
+    SIEM | ✅ Zero | ❌ Ingestão dupla completa |\n| Normalização necessária | ✅ Nenhuma
+    (ECS nativo) | ❌ Mapeamento CIM |\n| Alerta → correlação de rastreamento | ✅ Mesma
+    plataforma | ❌ Navegação entre produtos |\n| Licença única para obs + segurança
+    | ✅ | ❌ Licenças Cloud + ES |\n\n> **O modelo do Splunk cria um desincentivo financeiro
+    para cobertura de segurança.** Cada log que poderia ser um sinal de segurança
+    custa o dobro para proteger.\n"
 tabs:
 - id: xufxvrksrpet
   title: Demo App

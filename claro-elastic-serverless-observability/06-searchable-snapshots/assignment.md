@@ -8,94 +8,55 @@ teaser: Query two-year-old audit logs stored in object storage instantly. No reh
   jobs. No waiting overnight. No support tickets.
 notes:
 - type: text
-  contents: |
-    ## Workshop Slides
-
-    Follow along with the full presentation:
-
-    **[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**
-
-    *(Opens in a new tab)*
-
-    ***
-
-    🇧🇷 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**
-
-    *(Abre em uma nova aba)*
+  contents: "## Workshop Slides\n\nFollow along with the full presentation:\n\n**[→
+    Open Workshop Slides](https://poulsbopete.github.io/claro/)**\n\n*(Opens in a
+    new tab)*\n\n***\n\n\U0001F1E7\U0001F1F7 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**\n\n*(Abre
+    em uma nova aba)*\n"
 - type: text
-  contents: |
-    ## The Splunk DDAA Rehydration Problem
-
-    Splunk's **Dynamic Data Active Archive (DDAA)** offloads aged data to Amazon S3 to reduce costs. The problem: **archived data is not searchable in place.** To query it, you must:
-
-    1. File a **rehydration request** in the Splunk UI
-    2. Wait for the job to copy data from S3 back into warm storage
-    3. Rehydration can take **hours to days** depending on data volume
-    4. During an active compliance audit or security incident, your auditors wait
-
-    **Elastic's Frozen Tier is architecturally different.** Data stored in object storage as a Searchable Snapshot remains **directly queryable via the standard Elasticsearch API** — no copy-back, no rehydration queue, no support ticket required.
-
-    ***
-
-    🇧🇷 **O Problema de Reidratação do Splunk DDAA**
-
-    O **Dynamic Data Active Archive (DDAA)** do Splunk move dados antigos para o Amazon S3 para reduzir custos. O problema: **dados arquivados não são consultáveis no lugar.** Para consultá-los, você deve:
-
-    1. Abrir uma **solicitação de reidratação** na interface do Splunk
-    2. Aguardar o job copiar os dados do S3 de volta para o armazenamento quente
-    3. A reidratação pode levar **horas a dias** dependendo do volume de dados
-    4. Durante uma auditoria de compliance ativa ou incidente de segurança, seus auditores esperam
-
-    **O Tier Congelado do Elastic é arquiteturalmente diferente.** Dados armazenados no armazenamento de objetos como Snapshot Consultável permanecem **diretamente consultáveis via API Elasticsearch padrão** — sem cópia de volta, sem fila de reidratação, sem ticket de suporte necessário.
+  contents: "## The Splunk DDAA Rehydration Problem\n\nSplunk's **Dynamic Data Active
+    Archive (DDAA)** offloads aged data to Amazon S3 to reduce costs. The problem:
+    **archived data is not searchable in place.** To query it, you must:\n\n1. File
+    a **rehydration request** in the Splunk UI\n2. Wait for the job to copy data from
+    S3 back into warm storage\n3. Rehydration can take **hours to days** depending
+    on data volume\n4. During an active compliance audit or security incident, your
+    auditors wait\n\n**Elastic's Frozen Tier is architecturally different.** Data
+    stored in object storage as a Searchable Snapshot remains **directly queryable
+    via the standard Elasticsearch API** — no copy-back, no rehydration queue, no
+    support ticket required.\n\n***\n\n\U0001F1E7\U0001F1F7 **O Problema de Reidratação
+    do Splunk DDAA**\n\nO **Dynamic Data Active Archive (DDAA)** do Splunk move dados
+    antigos para o Amazon S3 para reduzir custos. O problema: **dados arquivados não
+    são consultáveis no lugar.** Para consultá-los, você deve:\n\n1. Abrir uma **solicitação
+    de reidratação** na interface do Splunk\n2. Aguardar o job copiar os dados do
+    S3 de volta para o armazenamento quente\n3. A reidratação pode levar **horas a
+    dias** dependendo do volume de dados\n4. Durante uma auditoria de compliance ativa
+    ou incidente de segurança, seus auditores esperam\n\n**O Tier Congelado do Elastic
+    é arquiteturalmente diferente.** Dados armazenados no armazenamento de objetos
+    como Snapshot Consultável permanecem **diretamente consultáveis via API Elasticsearch
+    padrão** — sem cópia de volta, sem fila de reidratação, sem ticket de suporte
+    necessário.\n"
 - type: text
-  contents: |
-    ## The Elastic Frozen Tier Architecture
-
-    ```
-    Elastic Frozen Tier (Searchable Snapshots)
-    ├── Data stored as snapshots in S3 / GCS / Azure Blob
-    ├── Shard metadata cached locally (minimal footprint)
-    ├── On query: relevant data fetched on-demand, cached
-    └── Result: full ES|QL API, zero rehydration lag
-
-    Splunk DDAA
-    ├── Data stored as Splunk-format files in S3
-    ├── NOT searchable in-place
-    ├── Requires full copy from S3 → warm storage first
-    └── Result: hours/days of blocked auditors
-    ```
-
-    | Capability | Elastic Frozen Tier | Splunk DDAA |
-    |------------|--------------------|----|
-    | Query archived data directly | ✅ Instantly | ❌ Requires rehydration |
-    | Rehydration time | None | Hours to days |
-    | Same API as hot data | ✅ | ❌ |
-    | Cross-tier queries (hot + archive) | ✅ Single query | ❌ Two operations |
-
-    ***
-
-    🇧🇷 **A Arquitetura do Tier Congelado do Elastic**
-
-    ```
-    Tier Congelado do Elastic (Snapshots Consultáveis)
-    ├── Dados armazenados como snapshots no S3 / GCS / Azure Blob
-    ├── Metadados de shard em cache local (footprint mínimo)
-    ├── Na consulta: dados relevantes buscados sob demanda, em cache
-    └── Resultado: API ES|QL completa, zero latência de reidratação
-
-    Splunk DDAA
-    ├── Dados armazenados como arquivos no formato Splunk no S3
-    ├── NÃO consultáveis no lugar
-    ├── Requer cópia completa do S3 → armazenamento quente primeiro
-    └── Resultado: horas/dias de auditores bloqueados
-    ```
-
-    | Capacidade | Tier Congelado Elastic | Splunk DDAA |
-    |------------|----------------------|-------------|
-    | Consultar dados arquivados diretamente | ✅ Instantaneamente | ❌ Requer reidratação |
-    | Tempo de reidratação | ✅ Nenhum | ❌ Horas a dias |
-    | Mesma API que dados quentes | ✅ ES\|QL completo | ❌ Caminho diferente |
-    | Consulta entre tiers (quente + arquivo) | ✅ Uma consulta | ❌ Duas operações |
+  contents: "## The Elastic Frozen Tier Architecture\n\n```\nElastic Frozen Tier (Searchable
+    Snapshots)\n├── Data stored as snapshots in S3 / GCS / Azure Blob\n├── Shard metadata
+    cached locally (minimal footprint)\n├── On query: relevant data fetched on-demand,
+    cached\n└── Result: full ES|QL API, zero rehydration lag\n\nSplunk DDAA\n├── Data
+    stored as Splunk-format files in S3\n├── NOT searchable in-place\n├── Requires
+    full copy from S3 → warm storage first\n└── Result: hours/days of blocked auditors\n```\n\n|
+    Capability | Elastic Frozen Tier | Splunk DDAA |\n|------------|--------------------|----|\n|
+    Query archived data directly | ✅ Instantly | ❌ Requires rehydration |\n| Rehydration
+    time | None | Hours to days |\n| Same API as hot data | ✅ | ❌ |\n| Cross-tier
+    queries (hot + archive) | ✅ Single query | ❌ Two operations |\n\n***\n\n\U0001F1E7\U0001F1F7
+    **A Arquitetura do Tier Congelado do Elastic**\n\n```\nTier Congelado do Elastic
+    (Snapshots Consultáveis)\n├── Dados armazenados como snapshots no S3 / GCS / Azure
+    Blob\n├── Metadados de shard em cache local (footprint mínimo)\n├── Na consulta:
+    dados relevantes buscados sob demanda, em cache\n└── Resultado: API ES|QL completa,
+    zero latência de reidratação\n\nSplunk DDAA\n├── Dados armazenados como arquivos
+    no formato Splunk no S3\n├── NÃO consultáveis no lugar\n├── Requer cópia completa
+    do S3 → armazenamento quente primeiro\n└── Resultado: horas/dias de auditores
+    bloqueados\n```\n\n| Capacidade | Tier Congelado Elastic | Splunk DDAA |\n|------------|----------------------|-------------|\n|
+    Consultar dados arquivados diretamente | ✅ Instantaneamente | ❌ Requer reidratação
+    |\n| Tempo de reidratação | ✅ Nenhum | ❌ Horas a dias |\n| Mesma API que dados
+    quentes | ✅ ES\\|QL completo | ❌ Caminho diferente |\n| Consulta entre tiers (quente
+    + arquivo) | ✅ Uma consulta | ❌ Duas operações |\n"
 tabs:
 - id: j4pjehbtzbyz
   title: Demo App

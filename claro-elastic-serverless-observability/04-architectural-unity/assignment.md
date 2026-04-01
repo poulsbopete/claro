@@ -7,72 +7,46 @@ teaser: Pivot from an APM trace span to its correlated log line in one click —
   second product, no copied trace IDs, no context switching.
 notes:
 - type: text
-  contents: |
-    ## Workshop Slides
-
-    Follow along with the full presentation:
-
-    **[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**
-
-    *(Opens in a new tab)*
-
-    ***
-
-    🇧🇷 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**
-
-    *(Abre em uma nova aba)*
+  contents: "## Workshop Slides\n\nFollow along with the full presentation:\n\n**[→
+    Open Workshop Slides](https://poulsbopete.github.io/claro/)**\n\n*(Opens in a
+    new tab)*\n\n***\n\n\U0001F1E7\U0001F1F7 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**\n\n*(Abre
+    em uma nova aba)*\n"
 - type: text
-  contents: |
-    ## Why Splunk Forces Context Switches
-
-    In Splunk, **logs live in Splunk Cloud** and **APM traces live in Splunk Observability Cloud** — two separate backends, two billing contracts, two query languages (SPL and SignalFlow).
-
-    To correlate a trace to a log, a Splunk operator must:
-    1. Copy a trace ID from Splunk Observability Cloud
-    2. Open a second browser tab, navigate to Splunk Cloud
-    3. Run a second SPL search using that trace ID
-    4. Hope the log was indexed in the same time window
-
-    **Elastic stores logs, metrics, and traces in a single Elasticsearch datastore.** The shared `trace.id` field links every signal together, and Kibana surfaces them all without leaving your context.
-
-    ***
-
-    🇧🇷 **Por Que o Splunk Força Trocas de Contexto**
-
-    No Splunk, **logs ficam no Splunk Cloud** e **rastreamentos APM ficam no Splunk Observability Cloud** — dois backends separados, dois contratos de cobrança, duas linguagens de consulta (SPL e SignalFlow).
-
-    Para correlacionar um rastreamento a um log, um operador Splunk precisa:
-    1. Copiar um trace ID do Splunk Observability Cloud
-    2. Abrir uma segunda aba do navegador e navegar para o Splunk Cloud
-    3. Executar uma segunda pesquisa SPL usando esse trace ID
-    4. Torcer para que o log tenha sido indexado na mesma janela de tempo
-
-    **O Elastic armazena logs, métricas e rastreamentos em um único armazenamento Elasticsearch.** O campo `trace.id` compartilhado vincula todos os sinais, e o Kibana os apresenta sem sair do contexto.
+  contents: "## Why Splunk Forces Context Switches\n\nIn Splunk, **logs live in Splunk
+    Cloud** and **APM traces live in Splunk Observability Cloud** — two separate backends,
+    two billing contracts, two query languages (SPL and SignalFlow).\n\nTo correlate
+    a trace to a log, a Splunk operator must:\n1. Copy a trace ID from Splunk Observability
+    Cloud\n2. Open a second browser tab, navigate to Splunk Cloud\n3. Run a second
+    SPL search using that trace ID\n4. Hope the log was indexed in the same time window\n\n**Elastic
+    stores logs, metrics, and traces in a single Elasticsearch datastore.** The shared
+    `trace.id` field links every signal together, and Kibana surfaces them all without
+    leaving your context.\n\n***\n\n\U0001F1E7\U0001F1F7 **Por Que o Splunk Força
+    Trocas de Contexto**\n\nNo Splunk, **logs ficam no Splunk Cloud** e **rastreamentos
+    APM ficam no Splunk Observability Cloud** — dois backends separados, dois contratos
+    de cobrança, duas linguagens de consulta (SPL e SignalFlow).\n\nPara correlacionar
+    um rastreamento a um log, um operador Splunk precisa:\n1. Copiar um trace ID do
+    Splunk Observability Cloud\n2. Abrir uma segunda aba do navegador e navegar para
+    o Splunk Cloud\n3. Executar uma segunda pesquisa SPL usando esse trace ID\n4.
+    Torcer para que o log tenha sido indexado na mesma janela de tempo\n\n**O Elastic
+    armazena logs, métricas e rastreamentos em um único armazenamento Elasticsearch.**
+    O campo `trace.id` compartilhado vincula todos os sinais, e o Kibana os apresenta
+    sem sair do contexto.\n"
 - type: text
-  contents: |
-    ## The Elastic Architecture Advantage
-
-    | Capability | Elastic | Splunk |
-    |------------|---------|--------|
-    | Traces + Logs in one datastore | ✅ Elasticsearch | ❌ Two products |
-    | Shared correlation field | ✅ `trace.id` everywhere | ❌ Manual copy-paste |
-    | Single query language | ✅ ES\|QL | ❌ SPL (logs) + SignalFlow (APM) |
-    | One billing contract | ✅ | ❌ Splunk Cloud + Splunk OC |
-
-    > When your on-call engineer gets paged at 2 AM, **context switches cost resolution time**. Elastic's architectural unity eliminates that tax entirely.
-
-    ***
-
-    🇧🇷 **A Vantagem Arquitetônica do Elastic**
-
-    | Capacidade | Elastic | Splunk |
-    |------------|---------|--------|
-    | Rastreamentos + Logs em um armazenamento | ✅ Elasticsearch | ❌ Dois produtos |
-    | Campo de correlação compartilhado | ✅ `trace.id` em todo lugar | ❌ Copiar e colar manual |
-    | Linguagem de consulta única | ✅ ES\|QL | ❌ SPL (logs) + SignalFlow (APM) |
-    | Um contrato de cobrança | ✅ | ❌ Splunk Cloud + Splunk OC |
-
-    > Quando seu engenheiro de plantão é acionado às 2h da manhã, **trocas de contexto custam tempo de resolução**. A unidade arquitetônica do Elastic elimina completamente esse custo.
+  contents: "## The Elastic Architecture Advantage\n\n| Capability | Elastic | Splunk
+    |\n|------------|---------|--------|\n| Traces + Logs in one datastore | ✅ Elasticsearch
+    | ❌ Two products |\n| Shared correlation field | ✅ `trace.id` everywhere | ❌ Manual
+    copy-paste |\n| Single query language | ✅ ES\\|QL | ❌ SPL (logs) + SignalFlow
+    (APM) |\n| One billing contract | ✅ | ❌ Splunk Cloud + Splunk OC |\n\n> When your
+    on-call engineer gets paged at 2 AM, **context switches cost resolution time**.
+    Elastic's architectural unity eliminates that tax entirely.\n\n***\n\n\U0001F1E7\U0001F1F7
+    **A Vantagem Arquitetônica do Elastic**\n\n| Capacidade | Elastic | Splunk |\n|------------|---------|--------|\n|
+    Rastreamentos + Logs em um armazenamento | ✅ Elasticsearch | ❌ Dois produtos |\n|
+    Campo de correlação compartilhado | ✅ `trace.id` em todo lugar | ❌ Copiar e colar
+    manual |\n| Linguagem de consulta única | ✅ ES\\|QL | ❌ SPL (logs) + SignalFlow
+    (APM) |\n| Um contrato de cobrança | ✅ | ❌ Splunk Cloud + Splunk OC |\n\n> Quando
+    seu engenheiro de plantão é acionado às 2h da manhã, **trocas de contexto custam
+    tempo de resolução**. A unidade arquitetônica do Elastic elimina completamente
+    esse custo.\n"
 tabs:
 - id: mrvpkb0obqmz
   title: Demo App

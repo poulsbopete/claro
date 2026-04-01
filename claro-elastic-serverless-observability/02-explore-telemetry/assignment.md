@@ -7,150 +7,74 @@ teaser: Navigate Elastic Serverless to see logs, distributed traces, and host me
   flowing from 9 simulated microservices across three cloud providers.
 notes:
 - type: text
-  contents: |
-    ## Workshop Slides
-
-    Follow along with the full presentation:
-
-    **[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**
-
-    *(Opens in a new tab)*
-
-    ***
-
-    🇧🇷 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**
-
-    *(Abre em uma nova aba)*
+  contents: "## Workshop Slides\n\nFollow along with the full presentation:\n\n**[→
+    Open Workshop Slides](https://poulsbopete.github.io/claro/)**\n\n*(Opens in a
+    new tab)*\n\n***\n\n\U0001F1E7\U0001F1F7 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**\n\n*(Abre
+    em uma nova aba)*\n"
 - type: text
-  contents: |
-    ## Lab 2 — Explore Live OpenTelemetry Data
-
-    **By the end of this challenge you will:**
-
-    - ✅ Query live logs with ES|QL in Discover
-    - ✅ View distributed traces and service maps in APM
-    - ✅ Inspect host metrics across 3 simulated cloud providers
-    - ✅ Explore the Executive Dashboard for the Claro scenario
-    - ✅ Run time-series ES|QL queries against live metric streams
-
-    **Your data is real.** Every log, trace, and metric is generated fresh and shipped via OTLP directly to Elastic — no recordings, no synthetic replay.
-
-    ***
-
-    🇧🇷 **Lab 2 — Explorar Dados OpenTelemetry em Tempo Real**
-
-    **Ao final deste desafio você irá:**
-
-    - ✅ Consultar logs em tempo real com ES|QL no Discover
-    - ✅ Ver rastreamentos distribuídos e mapas de serviços no APM
-    - ✅ Inspecionar métricas de host em 3 provedores de nuvem simulados
-    - ✅ Explorar o Dashboard Executivo do cenário Claro
-    - ✅ Executar consultas ES|QL de série temporal em streams de métricas em tempo real
-
-    **Seus dados são reais.** Cada log, rastreamento e métrica é gerado e enviado via OTLP diretamente ao Elastic — sem gravações, sem replay sintético.
+  contents: "## Lab 2 — Explore Live OpenTelemetry Data\n\n**By the end of this challenge
+    you will:**\n\n- ✅ Query live logs with ES|QL in Discover\n- ✅ View distributed
+    traces and service maps in APM\n- ✅ Inspect host metrics across 3 simulated cloud
+    providers\n- ✅ Explore the Executive Dashboard for the Claro scenario\n- ✅ Run
+    time-series ES|QL queries against live metric streams\n\n**Your data is real.**
+    Every log, trace, and metric is generated fresh and shipped via OTLP directly
+    to Elastic — no recordings, no synthetic replay.\n\n***\n\n\U0001F1E7\U0001F1F7
+    **Lab 2 — Explorar Dados OpenTelemetry em Tempo Real**\n\n**Ao final deste desafio
+    você irá:**\n\n- ✅ Consultar logs em tempo real com ES|QL no Discover\n- ✅ Ver
+    rastreamentos distribuídos e mapas de serviços no APM\n- ✅ Inspecionar métricas
+    de host em 3 provedores de nuvem simulados\n- ✅ Explorar o Dashboard Executivo
+    do cenário Claro\n- ✅ Executar consultas ES|QL de série temporal em streams de
+    métricas em tempo real\n\n**Seus dados são reais.** Cada log, rastreamento e métrica
+    é gerado e enviado via OTLP diretamente ao Elastic — sem gravações, sem replay
+    sintético.\n"
 - type: text
-  contents: |
-    ## Three Signals, One Store
-
-    Elastic correlates logs, metrics, and traces in a single data store — no switching tools, no context loss.
-
-    | Signal | Where to look | Index pattern |
-    |--------|--------------|---------------|
-    | **Logs** | Discover → ES\|QL | `logs*` |
-    | **Traces** | Applications → Service inventory | `traces-*` |
-    | **Metrics** | Observability → Infrastructure | `metrics-*` |
-
-    Signals connect automatically — a trace span links to its log lines via `trace.id`, and error spikes correlate with host CPU in the same timeline.
-
-    ***
-
-    🇧🇷 **Três Sinais, Um Armazenamento**
-
-    O Elastic correlaciona logs, métricas e rastreamentos em um único armazenamento de dados — sem trocar de ferramenta, sem perder contexto.
-
-    | Sinal | Onde encontrar | Padrão de índice |
-    |-------|---------------|------------------|
-    | **Logs** | Discover → ES\|QL | `logs*` |
-    | **Rastreamentos** | Applications → Service inventory | `traces-*` |
-    | **Métricas** | Observability → Infrastructure | `metrics-*` |
-
-    Os sinais se conectam automaticamente — um span de rastreamento se vincula às suas linhas de log via `trace.id`, e picos de erro se correlacionam com a CPU do host na mesma linha do tempo.
+  contents: "## Three Signals, One Store\n\nElastic correlates logs, metrics, and
+    traces in a single data store — no switching tools, no context loss.\n\n| Signal
+    | Where to look | Index pattern |\n|--------|--------------|---------------|\n|
+    **Logs** | Discover → ES\\|QL | `logs*` |\n| **Traces** | Applications → Service
+    inventory | `traces-*` |\n| **Metrics** | Observability → Infrastructure | `metrics-*`
+    |\n\nSignals connect automatically — a trace span links to its log lines via `trace.id`,
+    and error spikes correlate with host CPU in the same timeline.\n\n***\n\n\U0001F1E7\U0001F1F7
+    **Três Sinais, Um Armazenamento**\n\nO Elastic correlaciona logs, métricas e rastreamentos
+    em um único armazenamento de dados — sem trocar de ferramenta, sem perder contexto.\n\n|
+    Sinal | Onde encontrar | Padrão de índice |\n|-------|---------------|------------------|\n|
+    **Logs** | Discover → ES\\|QL | `logs*` |\n| **Rastreamentos** | Applications
+    → Service inventory | `traces-*` |\n| **Métricas** | Observability → Infrastructure
+    | `metrics-*` |\n\nOs sinais se conectam automaticamente — um span de rastreamento
+    se vincula às suas linhas de log via `trace.id`, e picos de erro se correlacionam
+    com a CPU do host na mesma linha do tempo.\n"
 - type: text
-  contents: |
-    ## What's Generating Telemetry
-
-    **9 scenario microservices** (application logs + traces):
-    Mobile Core · Billing Engine · SMS Gateway · Customer Portal · Content Delivery · Network Analytics · Voice Platform · IoT Connect · NOC Dashboard
-
-    **Background generators** (infrastructure telemetry):
-    - 3 cloud hosts (AWS, GCP, Azure) — CPU, memory, disk, network
-    - Kubernetes node + pod metrics
-    - Nginx access logs and MySQL slow query logs
-    - VPC flow logs and distributed trace chains
-
-    > **Tip:** Set the time range to **Last 15 minutes** to see the freshest data.
-
-    ***
-
-    🇧🇷 **O Que Está Gerando Telemetria**
-
-    **9 microsserviços do cenário** (logs de aplicação + rastreamentos):
-    Mobile Core · Billing Engine · SMS Gateway · Customer Portal · Content Delivery · Network Analytics · Voice Platform · IoT Connect · NOC Dashboard
-
-    **Geradores de fundo** (telemetria de infraestrutura):
-    - 3 hosts em nuvem (AWS, GCP, Azure) — CPU, memória, disco, rede
-    - Métricas de nós e pods do Kubernetes
-    - Logs de acesso Nginx e logs de consulta lenta do MySQL
-    - Logs de fluxo VPC e cadeias de rastreamento distribuído
-
-    > **Dica:** Defina o intervalo de tempo para **Últimos 15 minutos** para ver os dados mais recentes.
+  contents: "## What's Generating Telemetry\n\n**9 scenario microservices** (application
+    logs + traces):\nMobile Core · Billing Engine · SMS Gateway · Customer Portal
+    · Content Delivery · Network Analytics · Voice Platform · IoT Connect · NOC Dashboard\n\n**Background
+    generators** (infrastructure telemetry):\n- 3 cloud hosts (AWS, GCP, Azure) —
+    CPU, memory, disk, network\n- Kubernetes node + pod metrics\n- Nginx access logs
+    and MySQL slow query logs\n- VPC flow logs and distributed trace chains\n\n> **Tip:**
+    Set the time range to **Last 15 minutes** to see the freshest data.\n\n***\n\n\U0001F1E7\U0001F1F7
+    **O Que Está Gerando Telemetria**\n\n**9 microsserviços do cenário** (logs de
+    aplicação + rastreamentos):\nMobile Core · Billing Engine · SMS Gateway · Customer
+    Portal · Content Delivery · Network Analytics · Voice Platform · IoT Connect ·
+    NOC Dashboard\n\n**Geradores de fundo** (telemetria de infraestrutura):\n- 3 hosts
+    em nuvem (AWS, GCP, Azure) — CPU, memória, disco, rede\n- Métricas de nós e pods
+    do Kubernetes\n- Logs de acesso Nginx e logs de consulta lenta do MySQL\n- Logs
+    de fluxo VPC e cadeias de rastreamento distribuído\n\n> **Dica:** Defina o intervalo
+    de tempo para **Últimos 15 minutos** para ver os dados mais recentes.\n"
 - type: text
-  contents: |
-    ## ES|QL: Query Telemetry Like a Pipeline
-
-    ES|QL is Elastic's pipe-based query language. Run these in **Discover → ES|QL** during the challenge:
-
-    **Error spike by service:**
-    ```
-    FROM logs*
-    | WHERE @timestamp > NOW() - 15 MINUTES
-    | WHERE severity_text == "ERROR"
-    | STATS errors = COUNT(*) BY service.name
-    | SORT errors DESC
-    ```
-
-    **5G PDU session latency over time:**
-    ```
-    TS metrics*
-    | WHERE @timestamp > NOW() - 30 MINUTES
-    | EVAL minute = DATE_TRUNC(1 minute, @timestamp)
-    | STATS avg_pdu_latency = AVG(mobile_core.pdu_session_latency_ms) BY minute
-    | SORT minute DESC
-    ```
-
-    ***
-
-    🇧🇷 **ES|QL: Consulte Telemetria como um Pipeline**
-
-    Execute estas consultas em **Discover → ES|QL** durante o desafio:
-
-    **Pico de erros por serviço:**
-    ```
-    FROM logs*
-    | WHERE @timestamp > NOW() - 15 MINUTES
-    | WHERE severity_text == "ERROR"
-    | STATS errors = COUNT(*) BY service.name
-    | SORT errors DESC
-    ```
-
-    **Latência de sessão PDU 5G ao longo do tempo:**
-    ```
-    TS metrics*
-    | WHERE @timestamp > NOW() - 30 MINUTES
-    | EVAL minuto = DATE_TRUNC(1 minute, @timestamp)
-    | STATS latencia_pdu = AVG(mobile_core.pdu_session_latency_ms) BY minuto
-    | SORT minuto DESC
-    ```
+  contents: "## ES|QL: Query Telemetry Like a Pipeline\n\nES|QL is Elastic's pipe-based
+    query language. Run these in **Discover → ES|QL** during the challenge:\n\n**Error
+    spike by service:**\n```\nFROM logs*\n| WHERE @timestamp > NOW() - 15 MINUTES\n|
+    WHERE severity_text == \"ERROR\"\n| STATS errors = COUNT(*) BY service.name\n|
+    SORT errors DESC\n```\n\n**5G PDU session latency over time:**\n```\nTS metrics*\n|
+    WHERE @timestamp > NOW() - 30 MINUTES\n| EVAL minute = DATE_TRUNC(1 minute, @timestamp)\n|
+    STATS avg_pdu_latency = AVG(mobile_core.pdu_session_latency_ms) BY minute\n| SORT
+    minute DESC\n```\n\n***\n\n\U0001F1E7\U0001F1F7 **ES|QL: Consulte Telemetria como
+    um Pipeline**\n\nExecute estas consultas em **Discover → ES|QL** durante o desafio:\n\n**Pico
+    de erros por serviço:**\n```\nFROM logs*\n| WHERE @timestamp > NOW() - 15 MINUTES\n|
+    WHERE severity_text == \"ERROR\"\n| STATS errors = COUNT(*) BY service.name\n|
+    SORT errors DESC\n```\n\n**Latência de sessão PDU 5G ao longo do tempo:**\n```\nTS
+    metrics*\n| WHERE @timestamp > NOW() - 30 MINUTES\n| EVAL minuto = DATE_TRUNC(1
+    minute, @timestamp)\n| STATS latencia_pdu = AVG(mobile_core.pdu_session_latency_ms)
+    BY minuto\n| SORT minuto DESC\n```\n"
 tabs:
 - id: zwxgngz79zta
   title: Demo App

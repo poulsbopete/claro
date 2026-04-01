@@ -7,162 +7,90 @@ teaser: Wire the demo platform to your Elastic Cloud project and launch 9 micros
   sending live OpenTelemetry telemetry.
 notes:
 - type: text
-  contents: |
-    ## Workshop Slides
-
-    Follow along with the full presentation while the lab sets up:
-
-    **[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**
-
-    The slides cover all four competitive differentiators you'll explore in these labs — with bilingual English/Portuguese support.
-
-    *(Opens in a new tab — come back here when setup completes)*
-
-    ***
-
-    🇧🇷 Acompanhe a apresentação completa enquanto o lab é configurado:
-
-    **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**
-
-    Os slides cobrem os quatro diferenciais competitivos que você explorará nestes labs — com suporte bilíngue Inglês/Português.
-
-    *(Abre em uma nova aba — volte aqui quando a configuração for concluída)*
+  contents: "## Workshop Slides\n\nFollow along with the full presentation while the
+    lab sets up:\n\n**[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**\n\nThe
+    slides cover all four competitive differentiators you'll explore in these labs
+    — with bilingual English/Portuguese support.\n\n*(Opens in a new tab — come back
+    here when setup completes)*\n\n***\n\n\U0001F1E7\U0001F1F7 Acompanhe a apresentação
+    completa enquanto o lab é configurado:\n\n**[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**\n\nOs
+    slides cobrem os quatro diferenciais competitivos que você explorará nestes labs
+    — com suporte bilíngue Inglês/Português.\n\n*(Abre em uma nova aba — volte aqui
+    quando a configuração for concluída)*\n"
 - type: text
-  contents: |
-    ## Lab 1 — Connect to Elastic Cloud & Deploy
-
-    **What's happening right now:**
-    Your Elastic Cloud Serverless Observability project is being provisioned and the Claro NOC demo platform is being configured with your credentials.
-
-    **By the end of this challenge you will:**
-
-    - ✅ Confirm the Claro scenario is deployed and sending live telemetry
-    - ✅ Open your Elastic Serverless project — no login required
-    - ✅ Verify logs, metrics, and traces are flowing from 9 microservices
-    - ✅ Review the auto-provisioned AI agent, alert rules, and workflows
-
-    *Setup takes 3–4 minutes. Grab a coffee — it'll be ready soon.*
-
-    ***
-
-    🇧🇷 **Lab 1 — Conectar ao Elastic Cloud e Implantar**
-
-    **O que está acontecendo agora:**
-    Seu projeto Elastic Cloud Serverless Observability está sendo provisionado e a plataforma de demonstração Claro NOC está sendo configurada com suas credenciais.
-
-    **Ao final deste desafio você irá:**
-
-    - ✅ Confirmar que o cenário Claro está implantado e enviando telemetria em tempo real
-    - ✅ Abrir seu projeto Elastic Serverless — sem necessidade de login
-    - ✅ Verificar que logs, métricas e rastreamentos estão fluindo de 9 microsserviços
-    - ✅ Revisar o agente de IA, regras de alerta e workflows provisionados automaticamente
-
-    *A configuração leva 3–4 minutos. Pegue um café — estará pronto em breve.*
+  contents: "## Lab 1 — Connect to Elastic Cloud & Deploy\n\n**What's happening right
+    now:**\nYour Elastic Cloud Serverless Observability project is being provisioned
+    and the Claro NOC demo platform is being configured with your credentials.\n\n**By
+    the end of this challenge you will:**\n\n- ✅ Confirm the Claro scenario is deployed
+    and sending live telemetry\n- ✅ Open your Elastic Serverless project — no login
+    required\n- ✅ Verify logs, metrics, and traces are flowing from 9 microservices\n-
+    ✅ Review the auto-provisioned AI agent, alert rules, and workflows\n\n*Setup takes
+    3–4 minutes. Grab a coffee — it'll be ready soon.*\n\n***\n\n\U0001F1E7\U0001F1F7
+    **Lab 1 — Conectar ao Elastic Cloud e Implantar**\n\n**O que está acontecendo
+    agora:**\nSeu projeto Elastic Cloud Serverless Observability está sendo provisionado
+    e a plataforma de demonstração Claro NOC está sendo configurada com suas credenciais.\n\n**Ao
+    final deste desafio você irá:**\n\n- ✅ Confirmar que o cenário Claro está implantado
+    e enviando telemetria em tempo real\n- ✅ Abrir seu projeto Elastic Serverless
+    — sem necessidade de login\n- ✅ Verificar que logs, métricas e rastreamentos estão
+    fluindo de 9 microsserviços\n- ✅ Revisar o agente de IA, regras de alerta e workflows
+    provisionados automaticamente\n\n*A configuração leva 3–4 minutos. Pegue um café
+    — estará pronto em breve.*\n"
 - type: text
-  contents: |
-    ## Your Lab Environment
-
-    **Two tabs, everything you need:**
-
-    | Tab | What it is |
-    |-----|-----------|
-    | **Demo App** | Control panel — view service health, manage deployments, inject faults |
-    | **Elastic Serverless** | Your Observability project — pre-logged in, data already flowing |
-
-    **The Claro Network Operations Center scenario simulates 9 microservices across 3 clouds:**
-
-    - ☁️ **AWS** — Mobile Core (5G/4G AMF/SMF/UPF), Billing Engine (OCS/CDR), SMS Gateway (SMSC/SMPP)
-    - ☁️ **GCP** — Customer Portal (Mi Claro), Content Delivery (CDN/Claro TV), Network Analytics (DPI/Flink)
-    - ☁️ **Azure** — Voice Platform (IMS/SIP), IoT Connect (MQTT/PKI), NOC Dashboard (BGP/Alerts)
-
-    Every service emits **real OpenTelemetry** logs, metrics, and traces — no synthetic data.
-
-    ***
-
-    🇧🇷 **Seu Ambiente de Lab**
-
-    **Duas abas, tudo o que você precisa:**
-
-    | Aba | O que é |
-    |-----|---------|
-    | **Demo App** | Painel de controle — veja saúde dos serviços, gerencie implantações, injete falhas |
-    | **Elastic Serverless** | Seu projeto de Observabilidade — já autenticado, dados já fluindo |
-
-    **O cenário do Centro de Operações de Rede (NOC) da Claro simula 9 microsserviços em 3 nuvens:**
-
-    - ☁️ **AWS** — Mobile Core (5G/4G AMF/SMF/UPF), Billing Engine (OCS/CDR), SMS Gateway (SMSC/SMPP)
-    - ☁️ **GCP** — Customer Portal (Mi Claro), Content Delivery (CDN/Claro TV), Network Analytics (DPI/Flink)
-    - ☁️ **Azure** — Voice Platform (IMS/SIP), IoT Connect (MQTT/PKI), NOC Dashboard (BGP/Alertas)
-
-    Cada serviço emite logs, métricas e rastreamentos **reais via OpenTelemetry** — sem dados sintéticos.
+  contents: "## Your Lab Environment\n\n**Two tabs, everything you need:**\n\n| Tab
+    | What it is |\n|-----|-----------|\n| **Demo App** | Control panel — view service
+    health, manage deployments, inject faults |\n| **Elastic Serverless** | Your Observability
+    project — pre-logged in, data already flowing |\n\n**The Claro Network Operations
+    Center scenario simulates 9 microservices across 3 clouds:**\n\n- ☁️ **AWS** —
+    Mobile Core (5G/4G AMF/SMF/UPF), Billing Engine (OCS/CDR), SMS Gateway (SMSC/SMPP)\n-
+    ☁️ **GCP** — Customer Portal (Mi Claro), Content Delivery (CDN/Claro TV), Network
+    Analytics (DPI/Flink)\n- ☁️ **Azure** — Voice Platform (IMS/SIP), IoT Connect
+    (MQTT/PKI), NOC Dashboard (BGP/Alerts)\n\nEvery service emits **real OpenTelemetry**
+    logs, metrics, and traces — no synthetic data.\n\n***\n\n\U0001F1E7\U0001F1F7
+    **Seu Ambiente de Lab**\n\n**Duas abas, tudo o que você precisa:**\n\n| Aba |
+    O que é |\n|-----|---------|\n| **Demo App** | Painel de controle — veja saúde
+    dos serviços, gerencie implantações, injete falhas |\n| **Elastic Serverless**
+    | Seu projeto de Observabilidade — já autenticado, dados já fluindo |\n\n**O cenário
+    do Centro de Operações de Rede (NOC) da Claro simula 9 microsserviços em 3 nuvens:**\n\n-
+    ☁️ **AWS** — Mobile Core (5G/4G AMF/SMF/UPF), Billing Engine (OCS/CDR), SMS Gateway
+    (SMSC/SMPP)\n- ☁️ **GCP** — Customer Portal (Mi Claro), Content Delivery (CDN/Claro
+    TV), Network Analytics (DPI/Flink)\n- ☁️ **Azure** — Voice Platform (IMS/SIP),
+    IoT Connect (MQTT/PKI), NOC Dashboard (BGP/Alertas)\n\nCada serviço emite logs,
+    métricas e rastreamentos **reais via OpenTelemetry** — sem dados sintéticos.\n"
 - type: text
-  contents: |
-    ## What Was Auto-Deployed
-
-    When the lab started, the setup script provisioned your full observability stack automatically:
-
-    | Resource | Details |
-    |----------|---------|
-    | **Alert rules** | 20 ES\|QL rules — one per fault channel, 30s interval |
-    | **AI agent** | Investigation tools + system prompt |
-    | **Workflows** | Alert → investigate → create case → remediate |
-    | **Dashboards** | Executive dashboard + OTel signal dashboards |
-    | **Data views** | `logs.otel`, `metrics-*`, `traces-*` |
-
-    This is the same stack you'd deploy in production — configured in code, repeatable, version-controlled.
-
-    ***
-
-    🇧🇷 **O Que Foi Implantado Automaticamente**
-
-    Quando o lab iniciou, o script de configuração provisionou toda a pilha de observabilidade automaticamente:
-
-    | Recurso | Detalhes |
-    |---------|----------|
-    | **Regras de alerta** | 20 regras ES\|QL — uma por canal de falha, intervalo de 30s |
-    | **Agente de IA** | Ferramentas de investigação + prompt do sistema |
-    | **Workflows** | Alerta → investigar → criar caso → remediar |
-    | **Dashboards** | Dashboard executivo + dashboards de sinais OTel |
-    | **Data views** | `logs.otel`, `metrics-*`, `traces-*` |
-
-    Esta é a mesma pilha que você implantaria em produção — configurada em código, repetível e versionada.
+  contents: "## What Was Auto-Deployed\n\nWhen the lab started, the setup script provisioned
+    your full observability stack automatically:\n\n| Resource | Details |\n|----------|---------|\n|
+    **Alert rules** | 20 ES\\|QL rules — one per fault channel, 30s interval |\n|
+    **AI agent** | Investigation tools + system prompt |\n| **Workflows** | Alert
+    → investigate → create case → remediate |\n| **Dashboards** | Executive dashboard
+    + OTel signal dashboards |\n| **Data views** | `logs.otel`, `metrics-*`, `traces-*`
+    |\n\nThis is the same stack you'd deploy in production — configured in code, repeatable,
+    version-controlled.\n\n***\n\n\U0001F1E7\U0001F1F7 **O Que Foi Implantado Automaticamente**\n\nQuando
+    o lab iniciou, o script de configuração provisionou toda a pilha de observabilidade
+    automaticamente:\n\n| Recurso | Detalhes |\n|---------|----------|\n| **Regras
+    de alerta** | 20 regras ES\\|QL — uma por canal de falha, intervalo de 30s |\n|
+    **Agente de IA** | Ferramentas de investigação + prompt do sistema |\n| **Workflows**
+    | Alerta → investigar → criar caso → remediar |\n| **Dashboards** | Dashboard
+    executivo + dashboards de sinais OTel |\n| **Data views** | `logs.otel`, `metrics-*`,
+    `traces-*` |\n\nEsta é a mesma pilha que você implantaria em produção — configurada
+    em código, repetível e versionada.\n"
 - type: text
-  contents: |
-    ## Key Concepts: Elastic Serverless + OpenTelemetry
-
-    **Elastic Serverless** scales compute and storage independently. No cluster management, no shard tuning — just ingest and query.
-
-    **OpenTelemetry (OTel)** is the CNCF standard for vendor-neutral instrumentation. Elastic is a Platinum member and natively ingests OTLP — no Collector required.
-
-    **ES|QL** is Elastic's pipe-based query language, purpose-built for telemetry at scale:
-
-    ```
-    FROM logs*
-    | WHERE severity_text == "ERROR"
-    | STATS errors = COUNT(*) BY service.name
-    | SORT errors DESC
-    ```
-
-    **AI Workflows** connect alert detection to investigation to remediation — all without human intervention.
-
-    ***
-
-    🇧🇷 **Conceitos-chave: Elastic Serverless + OpenTelemetry**
-
-    **Elastic Serverless** escala computação e armazenamento de forma independente. Sem gerenciamento de cluster, sem ajuste de shards — apenas ingerir e consultar.
-
-    **OpenTelemetry (OTel)** é o padrão CNCF para instrumentação agnóstica de fornecedores. A Elastic é membro Platinum e ingere OTLP nativamente — sem Collector necessário.
-
-    **ES|QL** é a linguagem de consulta baseada em pipes da Elastic, criada para telemetria em escala:
-
-    ```
-    FROM logs*
-    | WHERE severity_text == "ERROR"
-    | STATS errors = COUNT(*) BY service.name
-    | SORT errors DESC
-    ```
-
-    **AI Workflows** conectam detecção de alertas à investigação e remediação — tudo sem intervenção humana.
+  contents: "## Key Concepts: Elastic Serverless + OpenTelemetry\n\n**Elastic Serverless**
+    scales compute and storage independently. No cluster management, no shard tuning
+    — just ingest and query.\n\n**OpenTelemetry (OTel)** is the CNCF standard for
+    vendor-neutral instrumentation. Elastic is a Platinum member and natively ingests
+    OTLP — no Collector required.\n\n**ES|QL** is Elastic's pipe-based query language,
+    purpose-built for telemetry at scale:\n\n```\nFROM logs*\n| WHERE severity_text
+    == \"ERROR\"\n| STATS errors = COUNT(*) BY service.name\n| SORT errors DESC\n```\n\n**AI
+    Workflows** connect alert detection to investigation to remediation — all without
+    human intervention.\n\n***\n\n\U0001F1E7\U0001F1F7 **Conceitos-chave: Elastic
+    Serverless + OpenTelemetry**\n\n**Elastic Serverless** escala computação e armazenamento
+    de forma independente. Sem gerenciamento de cluster, sem ajuste de shards — apenas
+    ingerir e consultar.\n\n**OpenTelemetry (OTel)** é o padrão CNCF para instrumentação
+    agnóstica de fornecedores. A Elastic é membro Platinum e ingere OTLP nativamente
+    — sem Collector necessário.\n\n**ES|QL** é a linguagem de consulta baseada em
+    pipes da Elastic, criada para telemetria em escala:\n\n```\nFROM logs*\n| WHERE
+    severity_text == \"ERROR\"\n| STATS errors = COUNT(*) BY service.name\n| SORT
+    errors DESC\n```\n\n**AI Workflows** conectam detecção de alertas à investigação
+    e remediação — tudo sem intervenção humana.\n"
 - type: text
   contents: "## While You Wait — Play O11y Survivors! \U0001F3AE\n\nSetup takes a
     few minutes. Survive the anomaly storm while Elastic provisions your environment:\n\n<iframe
