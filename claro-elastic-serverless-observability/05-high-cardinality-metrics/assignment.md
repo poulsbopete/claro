@@ -165,11 +165,11 @@ Click **`logs.otel.mobile-core`** → **Processing** tab:
 
 1. Click **Add processor**
 2. Under **Remove**, select **Remove** (the single-field remover — not "Remove by prefix" or "Drop document")
-3. In the **Field** box that appears, type: `kubernetes.pod.uid`
-4. Leave the condition blank so it applies to all documents
-5. Click **Save**
+3. In the **Field** box, type: `kubernetes.pod.uid`
+4. Click the **"Add kubernetes.pod.uid as a custom field"** link that appears below the field box (the ↲ icon) — this registers the field in the stream schema
+5. Click **Create**
 
-> **Tip:** The processor menu has three sections — "Drop document" removes the whole event, "Remove by prefix" removes a group of fields, and **"Remove"** removes a single named field. You want **Remove**.
+> **Tip:** The "Add as a custom field" prompt appears whenever you reference a field that isn't already in the stream's schema. You must click it before the processor can be saved.
 
 This drops `kubernetes.pod.uid` **only from the mobile-core stream** — the billing-engine stream still retains it for pod-level incident correlation.
 
@@ -278,11 +278,11 @@ Clique em **`logs.otel.mobile-core`** → aba **Processing**:
 
 1. Clique em **Add processor**
 2. Em **Remove**, selecione **Remove** (removedor de campo único — não "Remove by prefix" nem "Drop document")
-3. No campo **Field** que aparece, digite: `kubernetes.pod.uid`
-4. Deixe a condição em branco para que se aplique a todos os documentos
-5. Clique em **Save**
+3. No campo **Field**, digite: `kubernetes.pod.uid`
+4. Clique no link **"Add kubernetes.pod.uid as a custom field"** que aparece abaixo do campo (o ícone ↲) — isso registra o campo no esquema do stream
+5. Clique em **Create**
 
-> **Dica:** O menu de processadores tem três seções — "Drop document" remove o evento inteiro, "Remove by prefix" remove um grupo de campos, e **"Remove"** remove um único campo pelo nome. Você quer **Remove**.
+> **Dica:** O prompt "Add as a custom field" aparece sempre que você referencia um campo que ainda não está no esquema do stream. Você deve clicar nele antes de salvar o processador.
 
 Isso remove `kubernetes.pod.uid` **apenas do stream mobile-core** — o stream billing-engine ainda o mantém para correlação de incidentes no nível do pod.
 
