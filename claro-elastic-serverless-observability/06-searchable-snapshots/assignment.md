@@ -13,17 +13,17 @@ notes:
     new tab)*\n\n***\n\n\U0001F1E7\U0001F1F7 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**\n\n*(Abre
     em uma nova aba)*\n"
 - type: text
-  contents: "## The Splunk DDAA Problem vs Elastic Serverless\n\nSplunk's **Dynamic Data Active
-    Archive (DDAA)** offloads aged data to Amazon S3 to reduce costs. The problem:
-    **archived data is not searchable in place.** To query it, you must:\n\n1. File
-    a **rehydration request** in the Splunk UI\n2. Wait for the job to copy data from
-    S3 back into warm storage\n3. Rehydration can take **hours to days** depending
+  contents: "## The Splunk DDAA Problem vs Elastic Serverless\n\nSplunk's **Dynamic
+    Data Active Archive (DDAA)** offloads aged data to Amazon S3 to reduce costs.
+    The problem: **archived data is not searchable in place.** To query it, you must:\n\n1.
+    File a **rehydration request** in the Splunk UI\n2. Wait for the job to copy data
+    from S3 back into warm storage\n3. Rehydration can take **hours to days** depending
     on data volume\n4. During an active compliance audit or security incident, your
-    auditors wait\n\n**Elastic Serverless is architecturally different.** Data
-    stored in object storage as a Searchable Snapshot remains **directly queryable
-    via the standard Elasticsearch API** — no copy-back, no rehydration queue, no
-    support ticket required.\n\n***\n\n\U0001F1E7\U0001F1F7 **O Problema de Reidratação
-    do Splunk DDAA**\n\nO **Dynamic Data Active Archive (DDAA)** do Splunk move dados
+    auditors wait\n\n**Elastic Serverless is architecturally different.** Data stored
+    in object storage as a Searchable Snapshot remains **directly queryable via the
+    standard Elasticsearch API** — no copy-back, no rehydration queue, no support
+    ticket required.\n\n***\n\n\U0001F1E7\U0001F1F7 **O Problema de Reidratação do
+    Splunk DDAA**\n\nO **Dynamic Data Active Archive (DDAA)** do Splunk move dados
     antigos para o Amazon S3 para reduzir custos. O problema: **dados arquivados não
     são consultáveis no lugar.** Para consultá-los, você deve:\n\n1. Abrir uma **solicitação
     de reidratação** na interface do Splunk\n2. Aguardar o job copiar os dados do

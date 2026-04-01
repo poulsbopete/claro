@@ -74,7 +74,7 @@ tabs:
   title: Elastic Serverless
   type: service
   hostname: es3-api
-  path: /app/security/alerts
+  path: /app/observability/alerts
   port: 8080
   custom_request_headers:
   - key: Content-Security-Policy
@@ -139,27 +139,37 @@ FROM lab7-attack-logs-*
 
 ---
 
-## Step 3: View the Detection Rule in Kibana Security
+## Step 3: Create an Alert Rule on Your Observability Index
 
-1. In the **Elastic Serverless** tab navigate to **Security → Rules → Detection Rules**
-2. Find **"[Lab 7] Brute Force: Auth Failures on Observability Logs"**
-3. Confirm:
-   - Status: **Enabled**
-   - Index pattern: `lab7-attack-logs-*` ← your observability index, not a SIEM-specific index
-   - MITRE ATT&CK mapping: `T1110 - Brute Force`
+The key point of this lab: **no separate SIEM index needed**. Your observability logs are the security data.
 
-> If the rule was not auto-created, create it manually: **Create Rule → Threshold** → index `lab7-attack-logs-*`, query `http.response.status_code: 401`, threshold ≥ 5 grouped by `source.ip`.
+1. In the **Elastic Serverless** tab → **Alerts → Manage Rules**
+2. Click **Create rule** → select **ES|QL**
+3. Configure:
+   - **Name:** `Brute Force: Auth Failures on Observability Logs`
+   - **ES|QL query:**
+     ```esql
+     FROM lab7-attack-logs-*
+     | WHERE `event.action` == "authentication_failure"
+       AND `http.response.status_code` == 401
+     | STATS failure_count = COUNT() BY `source.ip`, `user.name`
+     | WHERE failure_count >= 5
+     ```
+   - **Check every:** 1 minute
+   - **Severity:** High
+4. Click **Save**
+
+> The index `lab7-attack-logs-*` is your **observability log index** — the same one queried in Steps 1 and 2. In Splunk, this would require Splunk ES, CIM normalization, and a separate ingest pipeline. In Elastic, you point an alert rule at the data you already have.
 
 ---
 
-## Step 4: View the Generated Alert
+## Step 4: View Alerts in Observability
 
-1. Navigate to **Security → Alerts**
-2. Click any alert to expand it
-3. Note the source index in the alert details: `lab7-attack-logs-*`
-4. Click **Investigate in Timeline** — you see the raw log events directly
+1. Navigate to **Observability → Alerts** (or the **Alerts** icon in the left nav)
+2. Within 1–2 minutes your new rule will fire against the injected attack events
+3. Click any alert to expand it — note the source index: `lab7-attack-logs-*`
 
-> In Splunk ES, this alert would reference data from a CIM-normalized SIEM datastore, separate from your observability data. In Elastic, the alert points directly to the **original observability log document.**
+> **This is the core message:** The alert was triggered by data in your observability index. No double ingest. No second product. No CIM mapping. Zero extra cost.
 
 ---
 
@@ -185,8 +195,8 @@ FROM logs.otel, logs.otel.*
 ## ✅ Complete When:
 
 - [ ] The ES|QL query confirms the brute-force events exist in `lab7-attack-logs-*` (the observability index)
-- [ ] The detection rule in Kibana Security shows `lab7-attack-logs-*` as its target index
-- [ ] A security alert is visible in Security → Alerts
+- [ ] You created an ES|QL alert rule targeting `lab7-attack-logs-*` (your observability index)
+- [ ] An alert fired and is visible in **Observability → Alerts**
 - [ ] You confirmed no separate SIEM index or double-ingest was required
 
 ---
@@ -242,27 +252,37 @@ FROM lab7-attack-logs-*
 
 ---
 
-## Passo 3: Ver a Regra de Detecção no Kibana Security
+## Passo 3: Criar uma Regra de Alerta no Seu Índice de Observabilidade
 
-1. Na aba **Elastic Serverless** navegue para **Security → Rules → Detection Rules**
-2. Encontre **"[Lab 7] Brute Force: Auth Failures on Observability Logs"**
-3. Confirme:
-   - Status: **Habilitado**
-   - Padrão de índice: `lab7-attack-logs-*` ← seu índice de observabilidade, não um índice específico de SIEM
-   - Mapeamento MITRE ATT&CK: `T1110 - Brute Force`
+O ponto principal deste lab: **nenhum índice SIEM separado necessário**. Seus logs de observabilidade são os dados de segurança.
 
-> Se a regra não foi criada automaticamente, crie manualmente: **Create Rule → Threshold** → índice `lab7-attack-logs-*`, consulta `http.response.status_code: 401`, limite ≥ 5 agrupado por `source.ip`.
+1. Na aba **Elastic Serverless** → **Alerts → Manage Rules**
+2. Clique em **Create rule** → selecione **ES|QL**
+3. Configure:
+   - **Nome:** `Força Bruta: Falhas de Autenticação em Logs de Observabilidade`
+   - **Consulta ES|QL:**
+     ```esql
+     FROM lab7-attack-logs-*
+     | WHERE `event.action` == "authentication_failure"
+       AND `http.response.status_code` == 401
+     | STATS falhas = COUNT() BY `source.ip`, `user.name`
+     | WHERE falhas >= 5
+     ```
+   - **Check every:** 1 minuto
+   - **Severity:** High
+4. Clique em **Save**
+
+> O índice `lab7-attack-logs-*` é seu **índice de log de observabilidade** — o mesmo consultado nos Passos 1 e 2. No Splunk, isso exigiria Splunk ES, normalização CIM e um pipeline de ingestão separado. No Elastic, você aponta uma regra de alerta para os dados que já possui.
 
 ---
 
-## Passo 4: Ver o Alerta Gerado
+## Passo 4: Ver Alertas em Observability
 
-1. Navegue para **Security → Alerts**
-2. Clique em qualquer alerta para expandi-lo
-3. Observe o índice de origem nos detalhes do alerta: `lab7-attack-logs-*`
-4. Clique em **Investigate in Timeline** — você vê os eventos de log brutos diretamente
+1. Navegue para **Observability → Alerts** (ou o ícone **Alerts** na navegação lateral)
+2. Em 1–2 minutos sua nova regra disparará contra os eventos de ataque injetados
+3. Clique em qualquer alerta para expandi-lo — observe o índice de origem: `lab7-attack-logs-*`
 
-> No Splunk ES, este alerta referenciaria dados de um armazenamento SIEM normalizado pelo CIM, separado dos seus dados de observabilidade. No Elastic, o alerta aponta diretamente para o **documento de log de observabilidade original.**
+> **Esta é a mensagem principal:** O alerta foi acionado por dados no seu índice de observabilidade. Sem ingestão dupla. Sem segundo produto. Sem mapeamento CIM. Custo adicional zero.
 
 ---
 
@@ -288,8 +308,8 @@ FROM logs.otel, logs.otel.*
 ## ✅ Concluído Quando:
 
 - [ ] A consulta ES|QL confirma que os eventos de força bruta existem em `lab7-attack-logs-*` (o índice de observabilidade)
-- [ ] A regra de detecção no Kibana Security mostra `lab7-attack-logs-*` como índice alvo
-- [ ] Um alerta de segurança está visível em Security → Alerts
+- [ ] Você criou uma regra de alerta ES|QL apontando para `lab7-attack-logs-*` (seu índice de observabilidade)
+- [ ] Um alerta disparou e está visível em **Observability → Alerts**
 - [ ] Você confirmou que nenhum índice SIEM separado ou ingestão dupla foi necessário
 
 </details>

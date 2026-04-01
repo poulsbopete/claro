@@ -7,76 +7,50 @@ teaser: Enable a security detection rule on logs you already ingested. No separa
   Splunk ES license. No second ingest pipeline. Zero extra cost.
 notes:
 - type: text
-  contents: |
-    ## Workshop Slides
-
-    Follow along with the full presentation:
-
-    **[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**
-
-    *(Opens in a new tab)*
-
-    ***
-
-    🇧🇷 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**
-
-    *(Abre em uma nova aba)*
+  contents: "## Workshop Slides\n\nFollow along with the full presentation:\n\n**[→
+    Open Workshop Slides](https://poulsbopete.github.io/claro/)**\n\n*(Opens in a
+    new tab)*\n\n***\n\n\U0001F1E7\U0001F1F7 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**\n\n*(Abre
+    em uma nova aba)*\n"
 - type: text
-  contents: |
-    ## The Splunk Enterprise Security Tax
-
-    To get SIEM detection on application logs in Splunk, you need:
-
-    - **Splunk Cloud** — for observability (logs, metrics)
-    - **Splunk Enterprise Security** — a separate, expensive product with its own license
-    - **CIM normalization** — your logs must be mapped to Splunk's Common Information Model
-    - **Double ingest** — data typically flows into both Splunk Cloud *and* Splunk ES separately
-
-    The result: SIEM coverage on app logs costs approximately **2× the ingest cost** plus an additional ES license plus CIM mapping work.
-
-    **In Elastic, observability data is security data.** The same Elasticsearch index that powers your APM dashboards can be targeted by Elastic Security detection rules — no additional ingest, no second license, no CIM.
-
-    ***
-
-    🇧🇷 **O Custo Adicional do Splunk Enterprise Security**
-
-    Para obter detecção SIEM em logs de aplicação no Splunk, você precisa:
-
-    - **Splunk Cloud** — para observabilidade (logs, métricas)
-    - **Splunk Enterprise Security** — um produto separado e caro com sua própria licença
-    - **Normalização CIM** — seus logs devem ser mapeados para o Common Information Model do Splunk
-    - **Ingestão dupla** — os dados geralmente fluem tanto para o Splunk Cloud *quanto* para o Splunk ES separadamente
-
-    O resultado: a cobertura SIEM em logs de aplicação custa aproximadamente **2× o custo de ingestão** mais uma licença ES adicional mais trabalho de mapeamento CIM.
-
-    **No Elastic, dados de observabilidade são dados de segurança.** O mesmo índice Elasticsearch que alimenta seus dashboards APM pode ser alvo de regras de detecção do Elastic Security — sem ingestão adicional, sem segunda licença, sem CIM.
+  contents: "## The Splunk Enterprise Security Tax\n\nTo get SIEM detection on application
+    logs in Splunk, you need:\n\n- **Splunk Cloud** — for observability (logs, metrics)\n-
+    **Splunk Enterprise Security** — a separate, expensive product with its own license\n-
+    **CIM normalization** — your logs must be mapped to Splunk's Common Information
+    Model\n- **Double ingest** — data typically flows into both Splunk Cloud *and*
+    Splunk ES separately\n\nThe result: SIEM coverage on app logs costs approximately
+    **2× the ingest cost** plus an additional ES license plus CIM mapping work.\n\n**In
+    Elastic, observability data is security data.** The same Elasticsearch index that
+    powers your APM dashboards can be targeted by Elastic Security detection rules
+    — no additional ingest, no second license, no CIM.\n\n***\n\n\U0001F1E7\U0001F1F7
+    **O Custo Adicional do Splunk Enterprise Security**\n\nPara obter detecção SIEM
+    em logs de aplicação no Splunk, você precisa:\n\n- **Splunk Cloud** — para observabilidade
+    (logs, métricas)\n- **Splunk Enterprise Security** — um produto separado e caro
+    com sua própria licença\n- **Normalização CIM** — seus logs devem ser mapeados
+    para o Common Information Model do Splunk\n- **Ingestão dupla** — os dados geralmente
+    fluem tanto para o Splunk Cloud *quanto* para o Splunk ES separadamente\n\nO resultado:
+    a cobertura SIEM em logs de aplicação custa aproximadamente **2× o custo de ingestão**
+    mais uma licença ES adicional mais trabalho de mapeamento CIM.\n\n**No Elastic,
+    dados de observabilidade são dados de segurança.** O mesmo índice Elasticsearch
+    que alimenta seus dashboards APM pode ser alvo de regras de detecção do Elastic
+    Security — sem ingestão adicional, sem segunda licença, sem CIM.\n"
 - type: text
-  contents: |
-    ## The Elastic Converged Operations Advantage
-
-    | Capability | Elastic | Splunk |
-    |------------|---------|--------|
-    | Detection rules on observability data | ✅ Same index | ❌ Separate product |
-    | Extra ingest for SIEM coverage | ✅ Zero | ❌ Full double-ingest |
-    | CIM / normalization required | ✅ None (ECS native) | ❌ CIM mapping required |
-    | Alert → trace correlation | ✅ Same platform | ❌ Cross-product navigation |
-    | Single license for obs + security | ✅ | ❌ Cloud + ES licenses |
-
-    > **Splunk's model creates a financial disincentive to security coverage.** Every log that could be a security signal costs twice as much to protect.
-
-    ***
-
-    🇧🇷 **A Vantagem das Operações Convergidas do Elastic**
-
-    | Capacidade | Elastic | Splunk |
-    |------------|---------|--------|
-    | Regras de detecção em dados de observabilidade | ✅ Mesmo índice | ❌ Produto separado |
-    | Ingestão extra para SIEM | ✅ Zero | ❌ Ingestão dupla completa |
-    | Normalização necessária | ✅ Nenhuma (ECS nativo) | ❌ Mapeamento CIM |
-    | Alerta → correlação de rastreamento | ✅ Mesma plataforma | ❌ Navegação entre produtos |
-    | Licença única para obs + segurança | ✅ | ❌ Licenças Cloud + ES |
-
-    > **O modelo do Splunk cria um desincentivo financeiro para cobertura de segurança.** Cada log que poderia ser um sinal de segurança custa o dobro para proteger.
+  contents: "## The Elastic Converged Operations Advantage\n\n| Capability | Elastic
+    | Splunk |\n|------------|---------|--------|\n| Detection rules on observability
+    data | ✅ Same index | ❌ Separate product |\n| Extra ingest for SIEM coverage |
+    ✅ Zero | ❌ Full double-ingest |\n| CIM / normalization required | ✅ None (ECS
+    native) | ❌ CIM mapping required |\n| Alert → trace correlation | ✅ Same platform
+    | ❌ Cross-product navigation |\n| Single license for obs + security | ✅ | ❌ Cloud
+    + ES licenses |\n\n> **Splunk's model creates a financial disincentive to security
+    coverage.** Every log that could be a security signal costs twice as much to protect.\n\n***\n\n\U0001F1E7\U0001F1F7
+    **A Vantagem das Operações Convergidas do Elastic**\n\n| Capacidade | Elastic
+    | Splunk |\n|------------|---------|--------|\n| Regras de detecção em dados de
+    observabilidade | ✅ Mesmo índice | ❌ Produto separado |\n| Ingestão extra para
+    SIEM | ✅ Zero | ❌ Ingestão dupla completa |\n| Normalização necessária | ✅ Nenhuma
+    (ECS nativo) | ❌ Mapeamento CIM |\n| Alerta → correlação de rastreamento | ✅ Mesma
+    plataforma | ❌ Navegação entre produtos |\n| Licença única para obs + segurança
+    | ✅ | ❌ Licenças Cloud + ES |\n\n> **O modelo do Splunk cria um desincentivo financeiro
+    para cobertura de segurança.** Cada log que poderia ser um sinal de segurança
+    custa o dobro para proteger.\n"
 tabs:
 - id: xufxvrksrpet
   title: Demo App
@@ -100,7 +74,7 @@ tabs:
   title: Elastic Serverless
   type: service
   hostname: es3-api
-  path: /app/security/alerts
+  path: /app/observability/alerts
   port: 8080
   custom_request_headers:
   - key: Content-Security-Policy
@@ -165,27 +139,37 @@ FROM lab7-attack-logs-*
 
 ---
 
-## Step 3: View the Detection Rule in Kibana Security
+## Step 3: Create an Alert Rule on Your Observability Index
 
-1. In the **Elastic Serverless** tab navigate to **Security → Rules → Detection Rules**
-2. Find **"[Lab 7] Brute Force: Auth Failures on Observability Logs"**
-3. Confirm:
-   - Status: **Enabled**
-   - Index pattern: `lab7-attack-logs-*` ← your observability index, not a SIEM-specific index
-   - MITRE ATT&CK mapping: `T1110 - Brute Force`
+The key point of this lab: **no separate SIEM index needed**. Your observability logs are the security data.
 
-> If the rule was not auto-created, create it manually: **Create Rule → Threshold** → index `lab7-attack-logs-*`, query `http.response.status_code: 401`, threshold ≥ 5 grouped by `source.ip`.
+1. In the **Elastic Serverless** tab → **Alerts → Manage Rules**
+2. Click **Create rule** → select **ES|QL**
+3. Configure:
+   - **Name:** `Brute Force: Auth Failures on Observability Logs`
+   - **ES|QL query:**
+     ```esql
+     FROM lab7-attack-logs-*
+     | WHERE `event.action` == "authentication_failure"
+       AND `http.response.status_code` == 401
+     | STATS failure_count = COUNT() BY `source.ip`, `user.name`
+     | WHERE failure_count >= 5
+     ```
+   - **Check every:** 1 minute
+   - **Severity:** High
+4. Click **Save**
+
+> The index `lab7-attack-logs-*` is your **observability log index** — the same one queried in Steps 1 and 2. In Splunk, this would require Splunk ES, CIM normalization, and a separate ingest pipeline. In Elastic, you point an alert rule at the data you already have.
 
 ---
 
-## Step 4: View the Generated Alert
+## Step 4: View Alerts in Observability
 
-1. Navigate to **Security → Alerts**
-2. Click any alert to expand it
-3. Note the source index in the alert details: `lab7-attack-logs-*`
-4. Click **Investigate in Timeline** — you see the raw log events directly
+1. Navigate to **Observability → Alerts** (or the **Alerts** icon in the left nav)
+2. Within 1–2 minutes your new rule will fire against the injected attack events
+3. Click any alert to expand it — note the source index: `lab7-attack-logs-*`
 
-> In Splunk ES, this alert would reference data from a CIM-normalized SIEM datastore, separate from your observability data. In Elastic, the alert points directly to the **original observability log document.**
+> **This is the core message:** The alert was triggered by data in your observability index. No double ingest. No second product. No CIM mapping. Zero extra cost.
 
 ---
 
@@ -211,8 +195,8 @@ FROM logs.otel, logs.otel.*
 ## ✅ Complete When:
 
 - [ ] The ES|QL query confirms the brute-force events exist in `lab7-attack-logs-*` (the observability index)
-- [ ] The detection rule in Kibana Security shows `lab7-attack-logs-*` as its target index
-- [ ] A security alert is visible in Security → Alerts
+- [ ] You created an ES|QL alert rule targeting `lab7-attack-logs-*` (your observability index)
+- [ ] An alert fired and is visible in **Observability → Alerts**
 - [ ] You confirmed no separate SIEM index or double-ingest was required
 
 ---
@@ -268,27 +252,37 @@ FROM lab7-attack-logs-*
 
 ---
 
-## Passo 3: Ver a Regra de Detecção no Kibana Security
+## Passo 3: Criar uma Regra de Alerta no Seu Índice de Observabilidade
 
-1. Na aba **Elastic Serverless** navegue para **Security → Rules → Detection Rules**
-2. Encontre **"[Lab 7] Brute Force: Auth Failures on Observability Logs"**
-3. Confirme:
-   - Status: **Habilitado**
-   - Padrão de índice: `lab7-attack-logs-*` ← seu índice de observabilidade, não um índice específico de SIEM
-   - Mapeamento MITRE ATT&CK: `T1110 - Brute Force`
+O ponto principal deste lab: **nenhum índice SIEM separado necessário**. Seus logs de observabilidade são os dados de segurança.
 
-> Se a regra não foi criada automaticamente, crie manualmente: **Create Rule → Threshold** → índice `lab7-attack-logs-*`, consulta `http.response.status_code: 401`, limite ≥ 5 agrupado por `source.ip`.
+1. Na aba **Elastic Serverless** → **Alerts → Manage Rules**
+2. Clique em **Create rule** → selecione **ES|QL**
+3. Configure:
+   - **Nome:** `Força Bruta: Falhas de Autenticação em Logs de Observabilidade`
+   - **Consulta ES|QL:**
+     ```esql
+     FROM lab7-attack-logs-*
+     | WHERE `event.action` == "authentication_failure"
+       AND `http.response.status_code` == 401
+     | STATS falhas = COUNT() BY `source.ip`, `user.name`
+     | WHERE falhas >= 5
+     ```
+   - **Check every:** 1 minuto
+   - **Severity:** High
+4. Clique em **Save**
+
+> O índice `lab7-attack-logs-*` é seu **índice de log de observabilidade** — o mesmo consultado nos Passos 1 e 2. No Splunk, isso exigiria Splunk ES, normalização CIM e um pipeline de ingestão separado. No Elastic, você aponta uma regra de alerta para os dados que já possui.
 
 ---
 
-## Passo 4: Ver o Alerta Gerado
+## Passo 4: Ver Alertas em Observability
 
-1. Navegue para **Security → Alerts**
-2. Clique em qualquer alerta para expandi-lo
-3. Observe o índice de origem nos detalhes do alerta: `lab7-attack-logs-*`
-4. Clique em **Investigate in Timeline** — você vê os eventos de log brutos diretamente
+1. Navegue para **Observability → Alerts** (ou o ícone **Alerts** na navegação lateral)
+2. Em 1–2 minutos sua nova regra disparará contra os eventos de ataque injetados
+3. Clique em qualquer alerta para expandi-lo — observe o índice de origem: `lab7-attack-logs-*`
 
-> No Splunk ES, este alerta referenciaria dados de um armazenamento SIEM normalizado pelo CIM, separado dos seus dados de observabilidade. No Elastic, o alerta aponta diretamente para o **documento de log de observabilidade original.**
+> **Esta é a mensagem principal:** O alerta foi acionado por dados no seu índice de observabilidade. Sem ingestão dupla. Sem segundo produto. Sem mapeamento CIM. Custo adicional zero.
 
 ---
 
@@ -314,8 +308,8 @@ FROM logs.otel, logs.otel.*
 ## ✅ Concluído Quando:
 
 - [ ] A consulta ES|QL confirma que os eventos de força bruta existem em `lab7-attack-logs-*` (o índice de observabilidade)
-- [ ] A regra de detecção no Kibana Security mostra `lab7-attack-logs-*` como índice alvo
-- [ ] Um alerta de segurança está visível em Security → Alerts
+- [ ] Você criou uma regra de alerta ES|QL apontando para `lab7-attack-logs-*` (seu índice de observabilidade)
+- [ ] Um alerta disparou e está visível em **Observability → Alerts**
 - [ ] Você confirmou que nenhum índice SIEM separado ou ingestão dupla foi necessário
 
 </details>
