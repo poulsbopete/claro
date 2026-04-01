@@ -16,7 +16,7 @@ notes:
 
     *(Opens in a new tab)*
 
-    ---
+    ***
 
     🇧🇷 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**
 
@@ -36,7 +36,7 @@ notes:
 
     **In Elastic, observability data is security data.** The same Elasticsearch index that powers your APM dashboards can be targeted by Elastic Security detection rules — no additional ingest, no second license, no CIM.
 
-    ---
+    ***
 
     🇧🇷 **O Custo Adicional do Splunk Enterprise Security**
 
@@ -64,7 +64,7 @@ notes:
 
     > **Splunk's model creates a financial disincentive to security coverage.** Every log that could be a security signal costs twice as much to protect.
 
-    ---
+    ***
 
     🇧🇷 **A Vantagem das Operações Convergidas do Elastic**
 

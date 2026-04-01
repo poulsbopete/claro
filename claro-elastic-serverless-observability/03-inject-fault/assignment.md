@@ -16,7 +16,7 @@ notes:
 
     *(Opens in a new tab)*
 
-    ---
+    ***
 
     🇧🇷 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**
 
@@ -34,7 +34,7 @@ notes:
 
     **You have 20 fault channels to choose from** — each simulates a realistic incident across AWS, GCP, and Azure services. Pick any one and watch Elastic light up.
 
-    ---
+    ***
 
     🇧🇷 **Lab 3 — Injetar uma Falha e Ver o Elastic Detectá-la**
 
@@ -66,7 +66,7 @@ notes:
     3. The workflow calls the **AI agent** with the error context
     4. The agent queries logs, correlates signals, and produces a root-cause analysis
 
-    ---
+    ***
 
     🇧🇷 **Como a Detecção de Falhas Funciona**
 
@@ -100,7 +100,7 @@ notes:
 
     This cascade across logs, metrics, and traces is what makes incidents hard to diagnose manually — and what makes Elastic's correlated view so powerful.
 
-    ---
+    ***
 
     🇧🇷 **Cascata de Falhas: Por Que Observabilidade é Difícil**
 
@@ -131,7 +131,7 @@ notes:
 
     Start with **Channel 1 — 5G SA Core Session Failure** for the clearest end-to-end telecom demo.
 
-    ---
+    ***
 
     🇧🇷 **20 Canais de Falha — Escolha Um**
 

@@ -18,7 +18,7 @@ notes:
 
     *(Opens in a new tab — come back here when setup completes)*
 
-    ---
+    ***
 
     🇧🇷 Acompanhe a apresentação completa enquanto o lab é configurado:
 
@@ -43,7 +43,7 @@ notes:
 
     *Setup takes 3–4 minutes. Grab a coffee — it'll be ready soon.*
 
-    ---
+    ***
 
     🇧🇷 **Lab 1 — Conectar ao Elastic Cloud e Implantar**
 
@@ -77,7 +77,7 @@ notes:
 
     Every service emits **real OpenTelemetry** logs, metrics, and traces — no synthetic data.
 
-    ---
+    ***
 
     🇧🇷 **Seu Ambiente de Lab**
 
@@ -111,7 +111,7 @@ notes:
 
     This is the same stack you'd deploy in production — configured in code, repeatable, version-controlled.
 
-    ---
+    ***
 
     🇧🇷 **O Que Foi Implantado Automaticamente**
 
@@ -145,7 +145,7 @@ notes:
 
     **AI Workflows** connect alert detection to investigation to remediation — all without human intervention.
 
-    ---
+    ***
 
     🇧🇷 **Conceitos-chave: Elastic Serverless + OpenTelemetry**
 

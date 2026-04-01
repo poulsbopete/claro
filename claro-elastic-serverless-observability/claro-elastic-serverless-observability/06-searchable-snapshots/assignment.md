@@ -17,7 +17,7 @@ notes:
 
     *(Opens in a new tab)*
 
-    ---
+    ***
 
     🇧🇷 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**
 
@@ -35,7 +35,7 @@ notes:
 
     **Elastic's Frozen Tier is architecturally different.** Data stored in object storage as a Searchable Snapshot remains **directly queryable via the standard Elasticsearch API** — no copy-back, no rehydration queue, no support ticket required.
 
-    ---
+    ***
 
     🇧🇷 **O Problema de Reidratação do Splunk DDAA**
 
@@ -72,7 +72,7 @@ notes:
     | Same API as hot data | ✅ | ❌ |
     | Cross-tier queries (hot + archive) | ✅ Single query | ❌ Two operations |
 
-    ---
+    ***
 
     🇧🇷 **A Arquitetura do Tier Congelado do Elastic**
 

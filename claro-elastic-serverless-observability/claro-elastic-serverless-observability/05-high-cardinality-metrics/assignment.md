@@ -18,7 +18,7 @@ notes:
 
     *(Opens in a new tab)*
 
-    ---
+    ***
 
     🇧🇷 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**
 
@@ -31,7 +31,7 @@ notes:
 
     **Elastic Streams gives you control inside the platform.** Instead of dropping fields at the agent, you route data into per-service streams — each with its own retention policy and field-level processing rules — without touching a single agent config.
 
-    ---
+    ***
 
     🇧🇷 **Como o Splunk Força uma Troca de Cardinalidade**
 
@@ -58,7 +58,7 @@ notes:
     | Drop fields per-stream | ✅ Processing rules | ❌ Global Collector change |
     | Zero agent changes | ✅ | ❌ Requires Collector restart |
 
-    ---
+    ***
 
     🇧🇷 **O Que Você Vai Fazer**
 

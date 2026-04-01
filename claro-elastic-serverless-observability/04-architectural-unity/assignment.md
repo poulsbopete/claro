@@ -16,7 +16,7 @@ notes:
 
     *(Opens in a new tab)*
 
-    ---
+    ***
 
     🇧🇷 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**
 
@@ -35,7 +35,7 @@ notes:
 
     **Elastic stores logs, metrics, and traces in a single Elasticsearch datastore.** The shared `trace.id` field links every signal together, and Kibana surfaces them all without leaving your context.
 
-    ---
+    ***
 
     🇧🇷 **Por Que o Splunk Força Trocas de Contexto**
 
@@ -61,7 +61,7 @@ notes:
 
     > When your on-call engineer gets paged at 2 AM, **context switches cost resolution time**. Elastic's architectural unity eliminates that tax entirely.
 
-    ---
+    ***
 
     🇧🇷 **A Vantagem Arquitetônica do Elastic**
 

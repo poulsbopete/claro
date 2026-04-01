@@ -16,7 +16,7 @@ notes:
 
     *(Opens in a new tab)*
 
-    ---
+    ***
 
     🇧🇷 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**
 
@@ -35,7 +35,7 @@ notes:
 
     **Your data is real.** Every log, trace, and metric is generated fresh and shipped via OTLP directly to Elastic — no recordings, no synthetic replay.
 
-    ---
+    ***
 
     🇧🇷 **Lab 2 — Explorar Dados OpenTelemetry em Tempo Real**
 
@@ -62,7 +62,7 @@ notes:
 
     Signals connect automatically — a trace span links to its log lines via `trace.id`, and error spikes correlate with host CPU in the same timeline.
 
-    ---
+    ***
 
     🇧🇷 **Três Sinais, Um Armazenamento**
 
@@ -90,7 +90,7 @@ notes:
 
     > **Tip:** Set the time range to **Last 15 minutes** to see the freshest data.
 
-    ---
+    ***
 
     🇧🇷 **O Que Está Gerando Telemetria**
 
@@ -128,7 +128,7 @@ notes:
     | SORT minute DESC
     ```
 
-    ---
+    ***
 
     🇧🇷 **ES|QL: Consulte Telemetria como um Pipeline**
 
