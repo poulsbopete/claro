@@ -1,9 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Link2, Layers3, Archive, Shield } from "lucide-react";
+import { Link2, Layers3, Archive, Shield, PlayCircle } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import type { SlideData } from "@/data/slides";
+
+const INSTRUQT_URL = "https://play.instruqt.com/elastic/invite/f4qxesovpsmi";
 
 const icons = [Link2, Layers3, Archive, Shield];
 const gradients = [
@@ -45,7 +47,7 @@ export function SummarySlide({ slide }: { slide: SlideData }) {
       </motion.div>
 
       {/* Win cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full mb-6">
         {(slide.points ?? []).map((point, i) => {
           const Icon = icons[i];
           return (
@@ -64,6 +66,27 @@ export function SummarySlide({ slide }: { slide: SlideData }) {
           );
         })}
       </div>
+
+      {/* Instruqt CTA */}
+      <motion.a
+        href={INSTRUQT_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7, duration: 0.5 }}
+        className="flex items-center gap-3 px-6 py-3 rounded-2xl border border-elastic-blue/40 bg-elastic-blue/10 hover:bg-elastic-blue/20 transition-all duration-200 group"
+      >
+        <PlayCircle className="w-5 h-5 text-elastic-blue flex-shrink-0" />
+        <div className="text-left">
+          <div className="text-white text-sm font-bold group-hover:text-elastic-blue transition-colors">
+            {t({ en: "Start the Lab", pt: "Iniciar o Lab" })}
+          </div>
+          <div className="text-white/50 text-xs font-mono">
+            {INSTRUQT_URL}
+          </div>
+        </div>
+      </motion.a>
     </div>
   );
 }
