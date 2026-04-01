@@ -191,12 +191,13 @@ Switch to the **Elastic Serverless** tab → **Discover → ES|QL** and confirm 
 
 ```esql
 FROM logs.otel, logs.otel.*
+METADATA _index
 | WHERE @timestamp > NOW() - 5 MINUTES
-| STATS log_count = COUNT(*) BY data_stream.dataset, service.name
+| STATS log_count = COUNT(*) BY _index, service.name
 | SORT log_count DESC
 ```
 
-You'll see `billing-engine` and `mobile-core` logs appearing under their own `data_stream.dataset` values — routed automatically, zero agent changes.
+You'll see `billing-engine` and `mobile-core` logs appearing under their own `_index` values (`logs.otel.billing-engine-*`, `logs.otel.mobile-core-*`) — routed automatically, zero agent changes.
 
 ---
 
@@ -304,8 +305,9 @@ Confirme que os dados estão sendo roteados para os streams filhos via ES|QL:
 
 ```esql
 FROM logs.otel, logs.otel.*
+METADATA _index
 | WHERE @timestamp > NOW() - 5 MINUTES
-| STATS log_count = COUNT(*) BY data_stream.dataset, service.name
+| STATS log_count = COUNT(*) BY _index, service.name
 | SORT log_count DESC
 ```
 
