@@ -15,6 +15,12 @@ notes:
     **[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**
 
     *(Opens in a new tab)*
+
+    ---
+
+    🇧🇷 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**
+
+    *(Abre em uma nova aba)*
 - type: text
   contents: |
     ## The Splunk Enterprise Security Tax
@@ -29,6 +35,21 @@ notes:
     The result: SIEM coverage on app logs costs approximately **2× the ingest cost** plus an additional ES license plus CIM mapping work.
 
     **In Elastic, observability data is security data.** The same Elasticsearch index that powers your APM dashboards can be targeted by Elastic Security detection rules — no additional ingest, no second license, no CIM.
+
+    ---
+
+    🇧🇷 **O Custo Adicional do Splunk Enterprise Security**
+
+    Para obter detecção SIEM em logs de aplicação no Splunk, você precisa:
+
+    - **Splunk Cloud** — para observabilidade (logs, métricas)
+    - **Splunk Enterprise Security** — um produto separado e caro com sua própria licença
+    - **Normalização CIM** — seus logs devem ser mapeados para o Common Information Model do Splunk
+    - **Ingestão dupla** — os dados geralmente fluem tanto para o Splunk Cloud *quanto* para o Splunk ES separadamente
+
+    O resultado: a cobertura SIEM em logs de aplicação custa aproximadamente **2× o custo de ingestão** mais uma licença ES adicional mais trabalho de mapeamento CIM.
+
+    **No Elastic, dados de observabilidade são dados de segurança.** O mesmo índice Elasticsearch que alimenta seus dashboards APM pode ser alvo de regras de detecção do Elastic Security — sem ingestão adicional, sem segunda licença, sem CIM.
 - type: text
   contents: |
     ## The Elastic Converged Operations Advantage
@@ -42,6 +63,20 @@ notes:
     | Single license for obs + security | ✅ | ❌ Cloud + ES licenses |
 
     > **Splunk's model creates a financial disincentive to security coverage.** Every log that could be a security signal costs twice as much to protect.
+
+    ---
+
+    🇧🇷 **A Vantagem das Operações Convergidas do Elastic**
+
+    | Capacidade | Elastic | Splunk |
+    |------------|---------|--------|
+    | Regras de detecção em dados de observabilidade | ✅ Mesmo índice | ❌ Produto separado |
+    | Ingestão extra para SIEM | ✅ Zero | ❌ Ingestão dupla completa |
+    | Normalização necessária | ✅ Nenhuma (ECS nativo) | ❌ Mapeamento CIM |
+    | Alerta → correlação de rastreamento | ✅ Mesma plataforma | ❌ Navegação entre produtos |
+    | Licença única para obs + segurança | ✅ | ❌ Licenças Cloud + ES |
+
+    > **O modelo do Splunk cria um desincentivo financeiro para cobertura de segurança.** Cada log que poderia ser um sinal de segurança custa o dobro para proteger.
 tabs:
 - id: xufxvrksrpet
   title: Demo App

@@ -15,6 +15,12 @@ notes:
     **[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**
 
     *(Opens in a new tab)*
+
+    ---
+
+    🇧🇷 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**
+
+    *(Abre em uma nova aba)*
 - type: text
   contents: |
     ## Lab 3 — Inject a Fault and Watch Elastic Detect It
@@ -27,6 +33,19 @@ notes:
     - ✅ Observe the AI agent begin its investigation automatically
 
     **You have 20 fault channels to choose from** — each simulates a realistic incident across AWS, GCP, and Azure services. Pick any one and watch Elastic light up.
+
+    ---
+
+    🇧🇷 **Lab 3 — Injetar uma Falha e Ver o Elastic Detectá-la**
+
+    **Ao final deste desafio você irá:**
+
+    - ✅ Acionar uma falha realista usando o controlador de Chaos do Demo App
+    - ✅ Ver o pico de erros aparecer no stream de logs do Elastic em segundos
+    - ✅ Ver uma regra de alerta ES|QL disparar em 30–60 segundos
+    - ✅ Observar o agente de IA iniciar sua investigação automaticamente
+
+    **Você tem 20 canais de falha para escolher** — cada um simula um incidente realista nos serviços AWS, GCP e Azure. Escolha qualquer um e veja o Elastic acender.
 - type: text
   contents: |
     ## How Fault Detection Works
@@ -46,6 +65,26 @@ notes:
     2. The alert triggers the **Significant Event Notification** workflow
     3. The workflow calls the **AI agent** with the error context
     4. The agent queries logs, correlates signals, and produces a root-cause analysis
+
+    ---
+
+    🇧🇷 **Como a Detecção de Falhas Funciona**
+
+    Cada canal de falha é monitorado por uma **regra de alerta ES|QL** dedicada, executada a cada 30 segundos:
+
+    ```
+    FROM logs*
+    | WHERE @timestamp > NOW() - 2 MINUTES
+    | WHERE body.text : "MacAddressFlappingException"
+    | STATS error_count = COUNT()
+    | WHERE error_count > 5
+    ```
+
+    Quando os erros excedem o limite:
+    1. O alerta dispara e aparece em **Observability → Alerts**
+    2. O alerta aciona o workflow **Significant Event Notification**
+    3. O workflow chama o **agente de IA** com o contexto do erro
+    4. O agente consulta logs, correlaciona sinais e produz uma análise de causa raiz
 - type: text
   contents: |
     ## Fault Cascade: Why Observability Is Hard
@@ -60,6 +99,21 @@ notes:
     | **4** | Host metrics spike on the affected cloud provider |
 
     This cascade across logs, metrics, and traces is what makes incidents hard to diagnose manually — and what makes Elastic's correlated view so powerful.
+
+    ---
+
+    🇧🇷 **Cascata de Falhas: Por Que Observabilidade é Difícil**
+
+    Um único canal de falha não afeta apenas um serviço — ele cria uma cascata:
+
+    | Etapa | O que acontece |
+    |-------|---------------|
+    | **1** | Serviço primário emite logs `ERROR` com um tipo específico de exceção |
+    | **2** | Serviços downstream emitem `WARN` — respostas upstream degradadas |
+    | **3** | Spans de rastreamento mostram latência elevada nos limites de integração |
+    | **4** | Métricas do host sobem no provedor de nuvem afetado |
+
+    Essa cascata entre logs, métricas e rastreamentos é o que torna incidentes difíceis de diagnosticar manualmente — e o que torna a visão correlacionada do Elastic tão poderosa.
 - type: text
   contents: |
     ## 20 Fault Channels — Pick One
@@ -76,6 +130,23 @@ notes:
     | **Operations** | Azure | NOC alert storm, BGP route flap |
 
     Start with **Channel 1 — 5G SA Core Session Failure** for the clearest end-to-end telecom demo.
+
+    ---
+
+    🇧🇷 **20 Canais de Falha — Escolha Um**
+
+    | Categoria | Nuvem | Exemplos de Falhas |
+    |-----------|-------|-------------------|
+    | **Mobile Core** | AWS | Falha de sessão 5G SA, tempestade de handover LTE X2, falha DNS/NRF |
+    | **Cobrança** | AWS | Backlog de mediação CDR, falha OCS Diameter Gy, pico de fraude em tempo real |
+    | **Mensagens** | AWS | Overflow de fila SMSC, falhas de bind SMPP |
+    | **Serviços Digitais** | GCP | Cascata de auth do portal, limite de taxa da API self-care |
+    | **CDN e Vídeo** | GCP | Tempestade de purge de cache CDN, stall do pipeline de transcodificação |
+    | **Analytics** | GCP | Lag do pipeline de analytics de rede, falha de classificação DPI |
+    | **Voz e IoT** | Azure | Saturação de trunk SIP, tempestade de registro IMS, sobrecarga do broker MQTT |
+    | **Operações** | Azure | Tempestade de alertas NOC, flap de rota BGP |
+
+    Comece com o **Canal 1 — 5G SA Core Session Failure** para a demonstração telecom mais clara de ponta a ponta.
 tabs:
 - id: tue0oby8caoi
   title: Demo App
