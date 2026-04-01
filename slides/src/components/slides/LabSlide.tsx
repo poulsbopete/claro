@@ -61,14 +61,14 @@ export function LabSlide({ slide }: { slide: SlideData }) {
           className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden flex-1"
         >
           {/* Table header */}
-          <div className="grid grid-cols-[1fr_auto_auto] border-b border-white/10">
+          <div className="grid grid-cols-[1fr_180px_180px] border-b border-white/10">
             <div className="px-5 py-3 text-white text-xs font-semibold uppercase tracking-wider">
               {t({ en: "Capability", pt: "Capacidade" })}
             </div>
-            <div className="px-5 py-3 text-elastic-teal text-xs font-bold uppercase tracking-wider text-center min-w-[140px]">
+            <div className="px-5 py-3 text-elastic-teal text-xs font-bold uppercase tracking-wider text-center">
               Elastic
             </div>
-            <div className="px-5 py-3 text-red-400/70 text-xs font-bold uppercase tracking-wider text-center min-w-[140px]">
+            <div className="px-5 py-3 text-red-400/70 text-xs font-bold uppercase tracking-wider text-center">
               Splunk
             </div>
           </div>
@@ -80,18 +80,18 @@ export function LabSlide({ slide }: { slide: SlideData }) {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 + i * 0.08 }}
-              className="grid grid-cols-[1fr_auto_auto] border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors"
+              className="grid grid-cols-[1fr_180px_180px] border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors"
             >
               <div className="px-5 py-3.5 text-white text-sm">
                 {t(row.capability)}
               </div>
-              <div className="px-5 py-3.5 text-elastic-teal text-sm text-center min-w-[140px] flex items-center justify-center gap-1.5">
+              <div className="px-5 py-3.5 text-elastic-teal text-sm text-center flex items-center justify-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0 opacity-70" />
-                <span className="text-xs">{row.elastic.replace("✅ ", "")}</span>
+                <span className="text-xs">{row.elastic.replace("✅ ", "").replace("✅", "")}</span>
               </div>
-              <div className="px-5 py-3.5 text-red-400/80 text-sm text-center min-w-[140px] flex items-center justify-center gap-1.5">
+              <div className="px-5 py-3.5 text-red-400/80 text-sm text-center flex items-center justify-center gap-1.5">
                 <XCircle className="w-3.5 h-3.5 flex-shrink-0 opacity-70" />
-                <span className="text-xs">{row.splunk.replace("❌ ", "")}</span>
+                <span className="text-xs">{row.splunk.replace("❌ ", "").replace("❌", "")}</span>
               </div>
             </motion.div>
           ))}
