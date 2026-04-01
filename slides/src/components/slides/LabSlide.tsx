@@ -63,7 +63,7 @@ export function LabSlide({ slide }: { slide: SlideData }) {
           {/* Table header */}
           <div className="grid grid-cols-[1fr_auto_auto] border-b border-white/10">
             <div className="px-5 py-3 text-white text-xs font-semibold uppercase tracking-wider">
-              {t({ en: "Capability", es: "Capacidad" })}
+              {t({ en: "Capability", pt: "Capacidade" })}
             </div>
             <div className="px-5 py-3 text-elastic-teal text-xs font-bold uppercase tracking-wider text-center min-w-[140px]">
               Elastic

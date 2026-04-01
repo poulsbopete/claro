@@ -1,28 +1,28 @@
 export type SlideType = "title" | "problem" | "lab" | "summary";
 
 export interface ComparisonRow {
-  capability: { en: string; es: string };
+  capability: { en: string; pt: string };
   elastic: string;
   splunk: string;
 }
 
 export interface LabPoint {
   en: string;
-  es: string;
+  pt: string;
 }
 
 export interface SlideData {
   id: string;
   type: SlideType;
-  title:    { en: string; es: string };
-  subtitle: { en: string; es: string };
+  title:    { en: string; pt: string };
+  subtitle: { en: string; pt: string };
   labNumber?: number;
-  badge?:   { en: string; es: string };
-  metric?:  { value: string; label: { en: string; es: string } };
+  badge?:   { en: string; pt: string };
+  metric?:  { value: string; label: { en: string; pt: string } };
   points?:  LabPoint[];
   comparison?: ComparisonRow[];
-  cta?:     { en: string; es: string };
-  footer?:  { en: string; es: string };
+  cta?:     { en: string; pt: string };
+  footer?:  { en: string; pt: string };
 }
 
 export const slides: SlideData[] = [
@@ -32,11 +32,11 @@ export const slides: SlideData[] = [
     type: "title",
     title: {
       en: "Elastic Observability",
-      es: "Elastic Observability",
+      pt: "Elastic Observability",
     },
     subtitle: {
       en: "The Unified Platform Advantage — Four Labs, Four Architectural Wins",
-      es: "La Ventaja de la Plataforma Unificada — Cuatro Labs, Cuatro Victorias Arquitectónicas",
+      pt: "A Vantagem da Plataforma Unificada — Quatro Labs, Quatro Vitórias Arquitetônicas",
     },
   },
 
@@ -46,28 +46,28 @@ export const slides: SlideData[] = [
     type: "problem",
     title: {
       en: "The Splunk Tax",
-      es: "El Costo Oculto de Splunk",
+      pt: "O Custo Oculto do Splunk",
     },
     subtitle: {
       en: "Four architectural constraints that slow teams down and inflate costs",
-      es: "Cuatro restricciones arquitectónicas que frenan a los equipos e inflan los costos",
+      pt: "Quatro restrições arquitetônicas que freiam as equipes e inflam os custos",
     },
     points: [
       {
         en: "Logs in Splunk Cloud, traces in Splunk Observability Cloud — two products, two UIs, two bills",
-        es: "Logs en Splunk Cloud, trazas en Splunk OC — dos productos, dos interfaces, dos facturas",
+        pt: "Logs no Splunk Cloud, rastreamentos no Splunk OC — dois produtos, duas interfaces, duas faturas",
       },
       {
         en: "MTS-based pricing punishes high-cardinality Kubernetes metrics — forcing teams to drop data",
-        es: "El precio por MTS penaliza las métricas de alta cardinalidad — forzando a eliminar datos",
+        pt: "O preço por MTS penaliza métricas de alta cardinalidade do Kubernetes — forçando as equipes a descartar dados",
       },
       {
         en: "DDAA archives are not searchable in-place — rehydration takes hours or days",
-        es: "Los archivos DDAA no son consultables en su lugar — la rehidratación tarda horas o días",
+        pt: "Os arquivos DDAA não são consultáveis no lugar — a reidratação leva horas ou dias",
       },
       {
         en: "Splunk Enterprise Security requires a separate license, CIM normalization, and double ingest",
-        es: "Splunk ES requiere licencia separada, normalización CIM e ingestión doble",
+        pt: "Splunk Enterprise Security exige licença separada, normalização CIM e ingestão dupla",
       },
     ],
   },
@@ -77,44 +77,44 @@ export const slides: SlideData[] = [
     id: "lab1",
     type: "lab",
     labNumber: 1,
-    badge: { en: "Architectural Unity", es: "Unidad Arquitectónica" },
+    badge: { en: "Architectural Unity", pt: "Unidade Arquitetônica" },
     title: {
       en: "One Datastore. Zero Context Switches.",
-      es: "Un Solo Almacén de Datos. Cero Cambios de Contexto.",
+      pt: "Um Único Armazenamento. Zero Trocas de Contexto.",
     },
     subtitle: {
       en: "Pivot from an APM trace to its correlated log line in one click — no second product, no copied trace IDs",
-      es: "Salta de una traza APM a su log correlacionado en un clic — sin segundo producto, sin copiar IDs",
+      pt: "Salte de um rastreamento APM para seu log correlacionado em um clique — sem segundo produto, sem copiar IDs",
     },
     metric: {
       value: "1",
-      label: { en: "platform for logs + traces + metrics", es: "plataforma para logs + trazas + métricas" },
+      label: { en: "platform for logs + traces + metrics", pt: "plataforma para logs + rastreamentos + métricas" },
     },
     comparison: [
       {
-        capability: { en: "Traces + Logs in one datastore", es: "Trazas + Logs en un solo almacén" },
+        capability: { en: "Traces + Logs in one datastore", pt: "Rastreamentos + Logs em um único armazenamento" },
         elastic: "✅ Elasticsearch",
         splunk:  "❌ Two products",
       },
       {
-        capability: { en: "Pivot trace → log", es: "Salto traza → log" },
+        capability: { en: "Pivot trace → log", pt: "Salto rastreamento → log" },
         elastic: "✅ One click",
         splunk:  "❌ Copy ID, open second UI",
       },
       {
-        capability: { en: "Single query language", es: "Lenguaje de consulta único" },
+        capability: { en: "Single query language", pt: "Linguagem de consulta única" },
         elastic: "✅ ES|QL everywhere",
         splunk:  "❌ SPL + SignalFlow",
       },
       {
-        capability: { en: "Single billing contract", es: "Contrato de facturación único" },
+        capability: { en: "Single billing contract", pt: "Contrato de faturamento único" },
         elastic: "✅",
         splunk:  "❌ Cloud + OC",
       },
     ],
     footer: {
       en: "Lab: Ingest synthetic APM traces + logs sharing trace.id, correlate them with one ES|QL query",
-      es: "Lab: Ingesta trazas APM + logs con trace.id compartido, correlalos con una consulta ES|QL",
+      pt: "Lab: Ingira rastreamentos APM + logs com trace.id compartilhado, correlacione-os com uma consulta ES|QL",
     },
   },
 
@@ -123,44 +123,44 @@ export const slides: SlideData[] = [
     id: "lab2",
     type: "lab",
     labNumber: 2,
-    badge: { en: "Elastic Streams", es: "Elastic Streams" },
+    badge: { en: "Elastic Streams", pt: "Elastic Streams" },
     title: {
       en: "Control Cardinality Without Touching Your Agents",
-      es: "Controla la Cardinalidad Sin Modificar tus Agentes",
+      pt: "Controle a Cardinalidade Sem Modificar seus Agentes",
     },
     subtitle: {
       en: "Set retention per stream, apply processing rules to drop high-cardinality fields — all inside the platform",
-      es: "Configura retención por stream, aplica reglas para eliminar campos de alta cardinalidad — todo dentro de la plataforma",
+      pt: "Configure retenção por stream, aplique regras para eliminar campos de alta cardinalidade — tudo dentro da plataforma",
     },
     metric: {
       value: "0",
-      label: { en: "agent changes to control cardinality", es: "cambios de agente para controlar cardinalidad" },
+      label: { en: "agent changes to control cardinality", pt: "alterações de agente para controlar cardinalidade" },
     },
     comparison: [
       {
-        capability: { en: "Retention per data stream", es: "Retención por flujo de datos" },
+        capability: { en: "Retention per data stream", pt: "Retenção por fluxo de dados" },
         elastic: "✅ 7d detailed / 90d summary",
         splunk:  "❌ Global policy only",
       },
       {
-        capability: { en: "Drop fields inside the platform", es: "Eliminar campos dentro de la plataforma" },
+        capability: { en: "Drop fields inside the platform", pt: "Eliminar campos dentro da plataforma" },
         elastic: "✅ Processing rules",
         splunk:  "❌ Collector-level only",
       },
       {
-        capability: { en: "MTS / cardinality pricing", es: "Precio por MTS / cardinalidad" },
+        capability: { en: "MTS / cardinality pricing", pt: "Preço por MTS / cardinalidade" },
         elastic: "✅ GB-based, no MTS charge",
         splunk:  "❌ Per-MTS billing",
       },
       {
-        capability: { en: "Reversible in-platform control", es: "Control reversible dentro de la plataforma" },
+        capability: { en: "Reversible in-platform control", pt: "Controle reversível dentro da plataforma" },
         elastic: "✅ Any time",
         splunk:  "❌ Re-deploy agents",
       },
     ],
     footer: {
-      en: "Lab: Create lab5-k8s-detailed (7d) and lab5-k8s-summary (90d) streams via Kibana Streams API",
-      es: "Lab: Crea streams lab5-k8s-detailed (7d) y lab5-k8s-summary (90d) mediante la API de Kibana Streams",
+      en: "Lab: Accept auto-partitioning suggestions on logs.otel, set per-service retention and processing rules",
+      pt: "Lab: Aceite sugestões de particionamento automático no logs.otel, defina retenção e regras de processamento por serviço",
     },
   },
 
@@ -169,44 +169,44 @@ export const slides: SlideData[] = [
     id: "lab3",
     type: "lab",
     labNumber: 3,
-    badge: { en: "Searchable Snapshots", es: "Snapshots Consultables" },
+    badge: { en: "Searchable Snapshots", pt: "Snapshots Consultáveis" },
     title: {
       en: "Two-Year-Old Data. Sub-Second Query.",
-      es: "Datos de Hace Dos Años. Consulta en Milisegundos.",
+      pt: "Dados de Dois Anos Atrás. Consulta em Milissegundos.",
     },
     subtitle: {
       en: "Query frozen-tier data stored in S3 instantly — no rehydration job, no support ticket, no waiting overnight",
-      es: "Consulta datos en tier congelado en S3 al instante — sin rehidratación, sin tickets, sin esperar toda la noche",
+      pt: "Consulte dados no tier congelado no S3 instantaneamente — sem reidratação, sem tickets, sem esperar a noite toda",
     },
     metric: {
       value: "0",
-      label: { en: "seconds rehydration time", es: "segundos de tiempo de rehidratación" },
+      label: { en: "seconds rehydration time", pt: "segundos de tempo de reidratação" },
     },
     comparison: [
       {
-        capability: { en: "Query archived data directly", es: "Consultar datos archivados directamente" },
+        capability: { en: "Query archived data directly", pt: "Consultar dados arquivados diretamente" },
         elastic: "✅ Instantly",
         splunk:  "❌ Requires rehydration",
       },
       {
-        capability: { en: "Rehydration time", es: "Tiempo de rehidratación" },
+        capability: { en: "Rehydration time", pt: "Tempo de reidratação" },
         elastic: "✅ None",
         splunk:  "❌ Hours to days",
       },
       {
-        capability: { en: "Same API as hot data", es: "Misma API que datos calientes" },
+        capability: { en: "Same API as hot data", pt: "Mesma API que dados quentes" },
         elastic: "✅ Full ES|QL",
         splunk:  "❌ Different path",
       },
       {
-        capability: { en: "Cross-tier query (hot + archive)", es: "Consulta entre tiers (caliente + archivo)" },
+        capability: { en: "Cross-tier query (hot + archive)", pt: "Consulta entre tiers (quente + arquivo)" },
         elastic: "✅ Single query",
         splunk:  "❌ Two operations",
       },
     ],
     footer: {
       en: "Lab: Query 500 audit logs timestamped 2 years ago alongside recent data — one wildcard pattern",
-      es: "Lab: Consulta 500 logs de auditoría de hace 2 años junto con datos recientes — un patrón wildcard",
+      pt: "Lab: Consulte 500 logs de auditoria de 2 anos atrás junto com dados recentes — um padrão wildcard",
     },
   },
 
@@ -215,44 +215,44 @@ export const slides: SlideData[] = [
     id: "lab4",
     type: "lab",
     labNumber: 4,
-    badge: { en: "Converged Operations", es: "Operaciones Convergentes" },
+    badge: { en: "Converged Operations", pt: "Operações Convergidas" },
     title: {
       en: "SIEM Coverage. Zero Extra Ingest.",
-      es: "Cobertura SIEM. Sin Ingestión Adicional.",
+      pt: "Cobertura SIEM. Sem Ingestão Adicional.",
     },
     subtitle: {
       en: "Enable a security detection rule on the same index that powers your APM dashboards — no double ingest, no second license",
-      es: "Activa una regla de detección de seguridad en el mismo índice de tu APM — sin doble ingestión, sin segunda licencia",
+      pt: "Ative uma regra de detecção de segurança no mesmo índice do seu APM — sem ingestão dupla, sem segunda licença",
     },
     metric: {
       value: "0×",
-      label: { en: "extra ingest cost for SIEM coverage", es: "costo adicional de ingestión para SIEM" },
+      label: { en: "extra ingest cost for SIEM coverage", pt: "custo adicional de ingestão para SIEM" },
     },
     comparison: [
       {
-        capability: { en: "Detection rules on observability data", es: "Reglas de detección en datos de observabilidad" },
+        capability: { en: "Detection rules on observability data", pt: "Regras de detecção em dados de observabilidade" },
         elastic: "✅ Same index",
         splunk:  "❌ Separate product",
       },
       {
-        capability: { en: "Additional ingest for SIEM", es: "Ingestión adicional para SIEM" },
+        capability: { en: "Additional ingest for SIEM", pt: "Ingestão adicional para SIEM" },
         elastic: "✅ Zero",
         splunk:  "❌ Full double-ingest",
       },
       {
-        capability: { en: "Normalization required", es: "Normalización requerida" },
+        capability: { en: "Normalization required", pt: "Normalização necessária" },
         elastic: "✅ None (ECS native)",
         splunk:  "❌ CIM mapping",
       },
       {
-        capability: { en: "Alert → trace correlation", es: "Alerta → correlación de trazas" },
+        capability: { en: "Alert → trace correlation", pt: "Alerta → correlação de rastreamentos" },
         elastic: "✅ Same platform",
         splunk:  "❌ Cross-product navigation",
       },
     ],
     footer: {
-      en: "Lab: Brute-force attack injected into lab4-app-logs-* — the same observability index from Lab 1",
-      es: "Lab: Ataque de fuerza bruta inyectado en lab4-app-logs-* — el mismo índice de observabilidad del Lab 1",
+      en: "Lab: Brute-force attack injected into lab7-attack-logs-* — the same observability index structure",
+      pt: "Lab: Ataque de força bruta injetado em lab7-attack-logs-* — mesma estrutura do índice de observabilidade",
     },
   },
 
@@ -262,28 +262,28 @@ export const slides: SlideData[] = [
     type: "summary",
     title: {
       en: "The Elastic Advantage",
-      es: "La Ventaja de Elastic",
+      pt: "A Vantagem do Elastic",
     },
     subtitle: {
       en: "One platform. Unified data. Predictable cost.",
-      es: "Una plataforma. Datos unificados. Costo predecible.",
+      pt: "Uma plataforma. Dados unificados. Custo previsível.",
     },
     points: [
       {
         en: "Architectural Unity — logs, traces, and metrics in a single Elasticsearch datastore",
-        es: "Unidad Arquitectónica — logs, trazas y métricas en un solo almacén de datos Elasticsearch",
+        pt: "Unidade Arquitetônica — logs, rastreamentos e métricas em um único armazenamento Elasticsearch",
       },
       {
         en: "Elastic Streams — control retention and cardinality inside the platform, without touching agents",
-        es: "Elastic Streams — controla retención y cardinalidad dentro de la plataforma, sin tocar agentes",
+        pt: "Elastic Streams — controle retenção e cardinalidade dentro da plataforma, sem tocar nos agentes",
       },
       {
         en: "Searchable Snapshots — frozen-tier archives queryable instantly, no rehydration lag",
-        es: "Snapshots Consultables — archivos en tier congelado consultables al instante, sin demora de rehidratación",
+        pt: "Snapshots Consultáveis — arquivos no tier congelado consultáveis instantaneamente, sem atraso de reidratação",
       },
       {
         en: "Converged Operations — SIEM detection on observability data at zero extra ingest cost",
-        es: "Operaciones Convergentes — detección SIEM en datos de observabilidad sin costo adicional de ingestión",
+        pt: "Operações Convergidas — detecção SIEM em dados de observabilidade sem custo adicional de ingestão",
       },
     ],
   },

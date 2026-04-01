@@ -8,12 +8,12 @@ import {
   type ReactNode,
 } from "react";
 
-export type Language = "en" | "es";
+export type Language = "en" | "pt";
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: <T>(obj: { en: T; es: T }) => T;
+  t: <T>(obj: { en: T; pt: T }) => T;
 }
 
 const LanguageContext = createContext<LanguageContextType>({
@@ -27,7 +27,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const stored = localStorage.getItem("slide-lang") as Language | null;
-    if (stored === "en" || stored === "es") setLanguageState(stored);
+    if (stored === "en" || stored === "pt") setLanguageState(stored);
   }, []);
 
   const setLanguage = (lang: Language) => {
@@ -35,7 +35,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("slide-lang", lang);
   };
 
-  const t = <T,>(obj: { en: T; es: T }): T => obj[language];
+  const t = <T,>(obj: { en: T; pt: T }): T => obj[language];
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>

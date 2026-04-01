@@ -6,32 +6,32 @@ import { useLanguage } from "@/context/LanguageContext";
 const stats = [
   {
     value: "20,000+",
-    label: { en: "Customers", es: "Clientes" },
+    label: { en: "Customers", pt: "Clientes" },
     accent: "#00BFB3", // teal
   },
   {
     value: "50%",
-    label: { en: "of Fortune 500", es: "del Fortune 500" },
+    label: { en: "of Fortune 500", pt: "do Fortune 500" },
     accent: "#1BA9F5", // blue
   },
   {
     value: "19B+",
-    label: { en: "Events searched / day", es: "Eventos buscados / día" },
+    label: { en: "Events searched / day", pt: "Eventos pesquisados / dia" },
     accent: "#F04E98", // pink
   },
   {
     value: "4B+",
-    label: { en: "Total downloads", es: "Descargas totales" },
+    label: { en: "Total downloads", pt: "Downloads totais" },
     accent: "#FEC514", // yellow
   },
   {
     value: "<10ms",
-    label: { en: "Avg. query latency", es: "Latencia media de consulta" },
+    label: { en: "Avg. query latency", pt: "Latência média de consulta" },
     accent: "#00BFB3",
   },
   {
     value: "3PB+",
-    label: { en: "Data ingested / day", es: "Datos ingeridos / día" },
+    label: { en: "Data ingested / day", pt: "Dados ingeridos / dia" },
     accent: "#1BA9F5",
   },
 ];
