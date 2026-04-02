@@ -103,12 +103,6 @@ tabs:
   hostname: es3-api
   path: /
   port: 8090
-- id: zlhgq4cdpd3k
-  title: Live Dashboard
-  type: service
-  hostname: es3-api
-  path: /dashboard
-  port: 8090
 - id: zc2taxpt1yvo
   title: Chaos Controller
   type: service
@@ -149,7 +143,6 @@ Use the three Demo App tabs to explore the running scenario:
 | Tab | What you'll see |
 |-----|----------------|
 | **Demo App** | Scenario selector — overview and deployment status |
-| **Live Dashboard** | Real-time service health across all 9 microservices |
 | **Chaos Controller** | 20 fault channels ready to inject — you'll use this in Lab 3 |
 
 ---
@@ -199,7 +192,6 @@ Use as três abas do Demo App para explorar o cenário em execução:
 | Aba | O que você verá |
 |-----|----------------|
 | **Demo App** | Seletor de cenário — visão geral e status da implantação |
-| **Live Dashboard** | Saúde dos serviços em tempo real entre os 9 microsserviços |
 | **Chaos Controller** | 20 canais de falha prontos para injeção — você usará isso no Lab 3 |
 
 ---

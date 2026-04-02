@@ -82,12 +82,6 @@ tabs:
   hostname: es3-api
   path: /
   port: 8090
-- id: lulkkj99gnak
-  title: Live Dashboard
-  type: service
-  hostname: es3-api
-  path: /dashboard
-  port: 8090
 - id: vfexjvy3bluo
   title: Chaos Controller
   type: service
