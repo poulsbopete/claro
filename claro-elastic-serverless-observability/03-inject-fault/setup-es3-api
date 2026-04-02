@@ -26,9 +26,8 @@ print(sum(1 for v in ch.values() if isinstance(v,dict) and v.get('active')))
   if [[ "$ACTIVE_COUNT" -gt 0 ]]; then
     log "Resolving $ACTIVE_COUNT stale chaos channel(s) from previous attempt..."
     for ch in $(seq 1 20); do
-      curl -sf -X POST http://localhost:8090/api/chaos/resolve \
-        -H 'Content-Type: application/json' \
-        -d "{\"deployment_id\":\"$DEP_ID\",\"channel\":$ch}" >/dev/null 2>&1 || true
+      curl -sf -X POST "http://localhost:8090/api/remediate/${ch}?deployment_id=${DEP_ID}" \
+        -H 'Content-Type: application/json' >/dev/null 2>&1 || true
     done
     sleep 2
     log "Stale channels resolved."
