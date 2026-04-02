@@ -119,113 +119,105 @@ timelimit: 0
 enhanced_loading: null
 ---
 
-# Inject a Fault and Watch Elastic Detect It
+# Inject a Fault — Watch Elastic Detect It
 
-Trigger a fault from the **Demo App**, then watch Elastic automatically investigate and create a case — no human intervention required.
+Open the **Chaos Controller** tab, pick a fault channel, and watch Elastic surface the incident in real time.
 
 ---
 
 ## Step 1 — Inject a Fault
 
-1. Open the **Chaos Controller** tab
-2. Select any fault channel and click **Inject Fault**
+1. Click the **Chaos Controller** tab
+2. Select any fault channel from the dropdown — **CH-01: 5G SA Core Session Failure** gives the clearest telecom story
+3. Choose a fault mode (Calibration Drift is the default)
+4. Click **INJECT FAULT** — you'll see it appear immediately in the **Active Channels** panel on the right
 
-> **Recommended:** Start with **Channel 1 — 5G SA Core Session Failure** for the clearest end-to-end telecom demo.
+> The fault is now generating error logs across the affected services at a rate that will trigger the ES|QL alert rule within 30–60 seconds.
 
-While the fault propagates, run this query in **Elastic Serverless → Discover → ES|QL** to watch the error spike in real time:
+---
+
+## Step 2 — Watch the Error Spike in Discover
+
+Click the **Elastic Serverless** tab — it opens directly into a live ES|QL query showing ERROR logs from the last 30 minutes.
+
+Watch the error count climb for the affected service. Re-run the query every 30 seconds:
 
 ```esql
-FROM logs*
+FROM logs.otel, logs.otel.*
 | WHERE @timestamp > NOW() - 15 MINUTES
 | WHERE severity_text == "ERROR"
 | STATS errors = COUNT(*) BY service.name
 | SORT errors DESC
 ```
 
-> **Tip:** Re-run this every 30 seconds after injecting the fault — you'll see the affected service's error count climb while all other services stay flat.
+> **What you're seeing:** Every fault channel generates errors with a specific exception type (e.g. `5G-SESSION-FAIL`) across the primary service and its downstream dependents — all captured in a single Elasticsearch datastore, queryable instantly with ES|QL. In Splunk, these logs and APM traces live in two separate products.
 
 ---
 
-## Step 2 — Watch the Workflow Run
+## Step 3 — Watch the Alert Fire
 
-In the **Elastic Serverless** tab, go to **Observability → Workflows**.
+Navigate to **Observability → Alerts** in the left nav.
 
-Within 1–2 minutes of injecting the fault, the **Claro NOC Significant Event Notification** workflow will show a recent execution. Click it to see each step:
+Within 30–60 seconds of injecting the fault, an alert will appear — the ES|QL rule detected the error spike and fired. The alert shows:
+- Which service is affected
+- When the threshold was breached
+- Severity level
 
-- **count_errors** — ES|QL query counting recent errors from the affected service
-- **run_rca** — AI agent root-cause analysis
-- **create_case** — Kibana case created with RCA findings
+> **What happens next:** This alert automatically triggers the **Claro NOC Significant Event Notification** workflow — which is what you'll explore in the next challenge.
 
-Click **View Full Conversation** to open the AI agent's complete chat thread — you can see exactly what it queried, what it found, and why it drew its conclusions. You can even type follow-up questions or ask the agent to take a remediation action.
-
----
-
-## Step 3 — Review the Case
-
-Go to **Observability → Cases** (or click **Cases** in the left nav).
-
-A new case will appear automatically with:
-- The fault name and affected service in the title
-- The AI agent's root-cause analysis in the description
-- Severity set to **High**
-
-✅ **Ready to continue when** you can see a workflow execution and an auto-created case in Elastic Serverless.
+✅ **Ready to continue when** you see an active alert in Observability → Alerts.
 
 ---
 
 <details>
 <summary>🇧🇷 <strong>Português — clique para expandir</strong></summary>
 
-# Injetar uma Falha e Ver o Elastic Detectá-la
+# Injetar uma Falha — Ver o Elastic Detectar
 
-Acione uma falha no **Demo App** e observe o Elastic investigar e criar um caso automaticamente — sem intervenção humana.
+Abra a aba **Chaos Controller**, escolha um canal de falha e veja o Elastic identificar o incidente em tempo real.
 
 ---
 
 ## Passo 1 — Injetar uma Falha
 
-1. Abra a aba **Chaos Controller**
-2. Selecione qualquer canal de falha e clique em **Inject Fault**
+1. Clique na aba **Chaos Controller**
+2. Selecione qualquer canal de falha — **CH-01: 5G SA Core Session Failure** é o mais claro
+3. Escolha um modo de falha (Calibration Drift é o padrão)
+4. Clique em **INJECT FAULT** — a falha aparece imediatamente no painel **Active Channels**
 
-> **Recomendado:** Comece com o **Canal 1 — 5G SA Core Session Failure** para a demonstração telecom mais clara de ponta a ponta.
+> A falha está gerando logs de erro nos serviços afetados a uma taxa que acionará a regra de alerta ES|QL em 30–60 segundos.
 
-Enquanto a falha se propaga, execute esta consulta em **Elastic Serverless → Discover → ES|QL** para acompanhar o pico de erros em tempo real:
+---
+
+## Passo 2 — Ver o Pico de Erros no Discover
+
+Clique na aba **Elastic Serverless** — ela abre diretamente em uma consulta ES|QL ao vivo mostrando logs ERROR dos últimos 30 minutos.
+
+Observe a contagem de erros subir para o serviço afetado. Reexecute a consulta a cada 30 segundos:
 
 ```esql
-FROM logs*
+FROM logs.otel, logs.otel.*
 | WHERE @timestamp > NOW() - 15 MINUTES
 | WHERE severity_text == "ERROR"
 | STATS errors = COUNT(*) BY service.name
 | SORT errors DESC
 ```
 
-> **Dica:** Reexecute a cada 30 segundos após injetar a falha — você verá a contagem de erros do serviço afetado subir enquanto todos os outros permanecem estáveis.
+> **O que você está vendo:** Cada canal de falha gera erros com um tipo específico de exceção em todo o serviço primário e seus dependentes — tudo capturado em um único armazenamento Elasticsearch, consultável instantaneamente com ES|QL.
 
 ---
 
-## Passo 2 — Acompanhar a Execução do Workflow
+## Passo 3 — Ver o Alerta Disparar
 
-Na aba **Elastic Serverless**, vá para **Observability → Workflows**.
+Navegue para **Observability → Alerts** na navegação esquerda.
 
-Em 1–2 minutos após injetar a falha, o workflow **Claro NOC Significant Event Notification** mostrará uma execução recente. Clique nela para ver cada etapa:
+Em 30–60 segundos após injetar a falha, um alerta aparecerá — a regra ES|QL detectou o pico de erros. O alerta mostra:
+- Qual serviço está afetado
+- Quando o limite foi ultrapassado
+- Nível de severidade
 
-- **count_errors** — consulta ES|QL contando erros recentes do serviço afetado
-- **run_rca** — análise de causa raiz pelo agente de IA
-- **create_case** — caso Kibana criado com as descobertas da RCA
+> **O que acontece a seguir:** Este alerta aciona automaticamente o workflow **Claro NOC Significant Event Notification** — o que você vai explorar no próximo desafio.
 
-Clique em **View Full Conversation** para abrir o histórico completo do agente de IA — você pode ver exatamente o que ele consultou, o que encontrou e por que chegou às suas conclusões. Você também pode digitar perguntas adicionais ou pedir ao agente que execute uma ação de remediação.
-
----
-
-## Passo 3 — Revisar o Caso
-
-Vá para **Observability → Cases** (ou clique em **Cases** na navegação lateral).
-
-Um novo caso aparecerá automaticamente com:
-- O nome da falha e o serviço afetado no título
-- A análise de causa raiz do agente de IA na descrição
-- Severidade definida como **Alta**
-
-✅ **Pronto para continuar quando** você conseguir ver uma execução de workflow e um caso criado automaticamente no Elastic Serverless.
+✅ **Pronto para continuar quando** você ver um alerta ativo em Observability → Alerts.
 
 </details>

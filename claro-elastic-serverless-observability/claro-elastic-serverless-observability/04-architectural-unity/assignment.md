@@ -2,77 +2,51 @@
 slug: architectural-unity
 id: u3xhamtxcv1b
 type: challenge
-title: 'Competitive Edge 1: Architectural Unity — One Platform, Zero Context Switches'
-teaser: Pivot from an APM trace span to its correlated log line in one click — no
-  second product, no copied trace IDs, no context switching.
+title: 'AI Response: Watch Elastic Investigate and Resolve the Fault'
+teaser: Watch the Significant Event Notification workflow run the AI agent for root-cause
+  analysis, review the auto-created case, then resolve the fault and verify it clears.
 notes:
 - type: text
-  contents: |
-    ## Workshop Slides
-
-    Follow along with the full presentation:
-
-    **[→ Open Workshop Slides](https://poulsbopete.github.io/claro/)**
-
-    *(Opens in a new tab)*
-
-    ***
-
-    🇧🇷 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**
-
-    *(Abre em uma nova aba)*
+  contents: "## Workshop Slides\n\nFollow along with the full presentation:\n\n**[→
+    Open Workshop Slides](https://poulsbopete.github.io/claro/)**\n\n*(Opens in a
+    new tab)*\n\n***\n\n\U0001F1E7\U0001F1F7 **[→ Abrir Slides do Workshop](https://poulsbopete.github.io/claro/)**\n\n*(Abre
+    em uma nova aba)*\n"
 - type: text
-  contents: |
-    ## Why Splunk Forces Context Switches
-
-    In Splunk, **logs live in Splunk Cloud** and **APM traces live in Splunk Observability Cloud** — two separate backends, two billing contracts, two query languages (SPL and SignalFlow).
-
-    To correlate a trace to a log, a Splunk operator must:
-    1. Copy a trace ID from Splunk Observability Cloud
-    2. Open a second browser tab, navigate to Splunk Cloud
-    3. Run a second SPL search using that trace ID
-    4. Hope the log was indexed in the same time window
-
-    **Elastic stores logs, metrics, and traces in a single Elasticsearch datastore.** The shared `trace.id` field links every signal together, and Kibana surfaces them all without leaving your context.
-
-    ***
-
-    🇧🇷 **Por Que o Splunk Força Trocas de Contexto**
-
-    No Splunk, **logs ficam no Splunk Cloud** e **rastreamentos APM ficam no Splunk Observability Cloud** — dois backends separados, dois contratos de cobrança, duas linguagens de consulta (SPL e SignalFlow).
-
-    Para correlacionar um rastreamento a um log, um operador Splunk precisa:
-    1. Copiar um trace ID do Splunk Observability Cloud
-    2. Abrir uma segunda aba do navegador e navegar para o Splunk Cloud
-    3. Executar uma segunda pesquisa SPL usando esse trace ID
-    4. Torcer para que o log tenha sido indexado na mesma janela de tempo
-
-    **O Elastic armazena logs, métricas e rastreamentos em um único armazenamento Elasticsearch.** O campo `trace.id` compartilhado vincula todos os sinais, e o Kibana os apresenta sem sair do contexto.
+  contents: "## Why Splunk Forces Context Switches\n\nIn Splunk, **logs live in Splunk
+    Cloud** and **APM traces live in Splunk Observability Cloud** — two separate backends,
+    two billing contracts, two query languages (SPL and SignalFlow).\n\nTo correlate
+    a trace to a log, a Splunk operator must:\n1. Copy a trace ID from Splunk Observability
+    Cloud\n2. Open a second browser tab, navigate to Splunk Cloud\n3. Run a second
+    SPL search using that trace ID\n4. Hope the log was indexed in the same time window\n\n**Elastic
+    stores logs, metrics, and traces in a single Elasticsearch datastore.** The shared
+    `trace.id` field links every signal together, and Kibana surfaces them all without
+    leaving your context.\n\n***\n\n\U0001F1E7\U0001F1F7 **Por Que o Splunk Força
+    Trocas de Contexto**\n\nNo Splunk, **logs ficam no Splunk Cloud** e **rastreamentos
+    APM ficam no Splunk Observability Cloud** — dois backends separados, dois contratos
+    de cobrança, duas linguagens de consulta (SPL e SignalFlow).\n\nPara correlacionar
+    um rastreamento a um log, um operador Splunk precisa:\n1. Copiar um trace ID do
+    Splunk Observability Cloud\n2. Abrir uma segunda aba do navegador e navegar para
+    o Splunk Cloud\n3. Executar uma segunda pesquisa SPL usando esse trace ID\n4.
+    Torcer para que o log tenha sido indexado na mesma janela de tempo\n\n**O Elastic
+    armazena logs, métricas e rastreamentos em um único armazenamento Elasticsearch.**
+    O campo `trace.id` compartilhado vincula todos os sinais, e o Kibana os apresenta
+    sem sair do contexto.\n"
 - type: text
-  contents: |
-    ## The Elastic Architecture Advantage
-
-    | Capability | Elastic | Splunk |
-    |------------|---------|--------|
-    | Traces + Logs in one datastore | ✅ Elasticsearch | ❌ Two products |
-    | Shared correlation field | ✅ `trace.id` everywhere | ❌ Manual copy-paste |
-    | Single query language | ✅ ES\|QL | ❌ SPL (logs) + SignalFlow (APM) |
-    | One billing contract | ✅ | ❌ Splunk Cloud + Splunk OC |
-
-    > When your on-call engineer gets paged at 2 AM, **context switches cost resolution time**. Elastic's architectural unity eliminates that tax entirely.
-
-    ***
-
-    🇧🇷 **A Vantagem Arquitetônica do Elastic**
-
-    | Capacidade | Elastic | Splunk |
-    |------------|---------|--------|
-    | Rastreamentos + Logs em um armazenamento | ✅ Elasticsearch | ❌ Dois produtos |
-    | Campo de correlação compartilhado | ✅ `trace.id` em todo lugar | ❌ Copiar e colar manual |
-    | Linguagem de consulta única | ✅ ES\|QL | ❌ SPL (logs) + SignalFlow (APM) |
-    | Um contrato de cobrança | ✅ | ❌ Splunk Cloud + Splunk OC |
-
-    > Quando seu engenheiro de plantão é acionado às 2h da manhã, **trocas de contexto custam tempo de resolução**. A unidade arquitetônica do Elastic elimina completamente esse custo.
+  contents: "## The Elastic Architecture Advantage\n\n| Capability | Elastic | Splunk
+    |\n|------------|---------|--------|\n| Traces + Logs in one datastore | ✅ Elasticsearch
+    | ❌ Two products |\n| Shared correlation field | ✅ `trace.id` everywhere | ❌ Manual
+    copy-paste |\n| Single query language | ✅ ES\\|QL | ❌ SPL (logs) + SignalFlow
+    (APM) |\n| One billing contract | ✅ | ❌ Splunk Cloud + Splunk OC |\n\n> When your
+    on-call engineer gets paged at 2 AM, **context switches cost resolution time**.
+    Elastic's architectural unity eliminates that tax entirely.\n\n***\n\n\U0001F1E7\U0001F1F7
+    **A Vantagem Arquitetônica do Elastic**\n\n| Capacidade | Elastic | Splunk |\n|------------|---------|--------|\n|
+    Rastreamentos + Logs em um armazenamento | ✅ Elasticsearch | ❌ Dois produtos |\n|
+    Campo de correlação compartilhado | ✅ `trace.id` em todo lugar | ❌ Copiar e colar
+    manual |\n| Linguagem de consulta única | ✅ ES\\|QL | ❌ SPL (logs) + SignalFlow
+    (APM) |\n| Um contrato de cobrança | ✅ | ❌ Splunk Cloud + Splunk OC |\n\n> Quando
+    seu engenheiro de plantão é acionado às 2h da manhã, **trocas de contexto custam
+    tempo de resolução**. A unidade arquitetônica do Elastic elimina completamente
+    esse custo.\n"
 tabs:
 - id: mrvpkb0obqmz
   title: Demo App
@@ -90,7 +64,7 @@ tabs:
   title: Elastic Serverless
   type: service
   hostname: es3-api
-  path: /app/apm/services
+  path: /app/workflows
   port: 8080
   custom_request_headers:
   - key: Content-Security-Policy
@@ -107,163 +81,117 @@ timelimit: 2700
 enhanced_loading: null
 ---
 
-# Competitive Edge 1: Architectural Unity
+# AI Response: Investigate and Resolve
 
-Nine Claro microservices are continuously generating **real** OpenTelemetry traces and logs — all flowing into the same Elasticsearch datastore. In this challenge you'll pivot from a live APM trace directly to its correlated log line without switching tools, tabs, or query languages.
-
----
-
-## Step 1: Find High-Error Services with ES|QL
-
-Open the **Elastic Serverless** tab → **Discover** → switch to **ES|QL** mode, and run:
-
-```esql
-FROM logs.otel, logs.otel.*
-| WHERE @timestamp > NOW() - 15 MINUTES
-| WHERE severity_text == "ERROR"
-| STATS errors = COUNT(*) BY service.name
-| SORT errors DESC
-| LIMIT 10
-```
-
-> You'll see all 9 Claro services ranked by error count. Services with active chaos faults will show dramatically higher numbers — but every service is emitting errors at a background rate, giving you real data to explore.
+The alert you saw in the previous challenge automatically triggered an AI-powered workflow. Let's watch it run and close the incident.
 
 ---
 
-## Step 2: Grab a Trace ID from a Failing Log
+## Step 1 — Watch the Workflow Execute
 
-Find an ERROR log that has a `trace.id` — this is the link that connects logs to traces:
+Click the **Elastic Serverless** tab — it opens directly on **Observability → Workflows**.
 
-```esql
-FROM logs.otel, logs.otel.*
-| WHERE @timestamp > NOW() - 5 MINUTES
-| WHERE severity_text == "ERROR" AND trace.id IS NOT NULL
-| KEEP service.name, body.text, trace.id, @timestamp
-| SORT @timestamp DESC
-| LIMIT 5
-```
+Find the **Claro Network Operations Center Significant Event Notification** workflow and click the most recent execution. You'll see the steps running in real time:
 
-Copy the `trace.id` value from any row (a 32-character hex string like `4bf92f3577b34da6a3ce929d0e0e4736`).
+| Step | What it does | Typical time |
+|------|-------------|-------------|
+| `enrich_context` | ES|QL query — finds log lines matching the error type | < 1 sec |
+| `count_errors` | ES|QL query — counts total errors in last 15 minutes | < 1 sec |
+| `run_rca` | AI agent — searches logs, traces, correlates signals, writes RCA | ~1–2 min |
+| `create_case` | Creates a Kibana case with the RCA as the description | < 1 sec |
+| `audit_log` | Writes a record to the significant-events index | < 1 sec |
 
----
-
-## Step 3: Pivot to All Correlated Logs — The Elastic Way
-
-Paste your `trace.id` into this query to see **every log line from that same request**, across all services involved:
-
-```esql
-FROM logs.otel, logs.otel.*
-| WHERE trace.id == "<paste-your-trace-id-here>"
-| KEEP @timestamp, service.name, severity_text, body.text
-| SORT @timestamp ASC
-```
-
-> **In Splunk:** You are now on your second product (Splunk Cloud), running a second search in SPL, in a different browser tab, hoping the log retention window matches.
->
-> **In Elastic:** Same ES|QL, same datastore, same session. **One platform. Zero context switching.**
+> **The Elastic difference:** This entire chain — alert → workflow → AI agent → case — runs on a single platform. In Splunk, alerting (Splunk Cloud), AI (Splunk AI Assistant), and case management (ITSM connector) are all separate products with separate configurations.
 
 ---
 
-## Step 4: See Native APM ↔ Log Correlation in Kibana
+## Step 2 — Read the AI's Root Cause Analysis
 
-No query needed — Kibana does this automatically:
+Once `run_rca` completes, go to **Observability → Cases** in the left nav.
 
-1. In the **Elastic Serverless** tab go to **Applications → Service inventory**
-2. Click any service — for example **mobile-core** or **billing-engine**
-3. Click any **transaction** to open the trace waterfall
-4. Click the **Logs** tab at the top of the trace detail panel
+A new case will be there automatically, titled **"Claro Network Operations Center RCA: [alert name]"**. Open it to see:
+- Which service failed and why
+- Which downstream services were affected
+- What the AI recommends as a remediation step
 
-Kibana automatically shows every log line correlated to that trace via the shared `trace.id` field — no configuration, no copy-paste, no second product.
+Click **View Conversation** to open the AI agent's full chat thread — you can ask follow-up questions directly in Kibana.
 
 ---
 
-## ✅ Complete When:
+## Step 3 — Resolve the Fault
 
-- [ ] Your ES|QL error query shows Claro services ranked by error rate
-- [ ] You retrieved a `trace.id` from a failing log entry
-- [ ] You queried all logs for that trace with a single ES|QL statement
-- [ ] You clicked the **Logs** tab inside an APM trace detail — one click, no product switch
+Go back to the **Chaos Controller** tab.
+
+In the **Active Channels** panel, find the fault you injected and click **RESOLVE**. The channel immediately returns to **STANDBY**.
+
+> This simulates the NOC operator acting on the AI's recommendation. In a fully automated setup, the **Remediation Action** workflow (visible in Workflows) can trigger this automatically — queuing a remediation command that the poller picks up and executes without human intervention.
+
+---
+
+## Step 4 — Verify Resolution
+
+The channel card in the Active Channels panel disappears and the channel status returns to **STANDBY**.
+
+In **Elastic Serverless → Observability → Alerts**, the alert will auto-recover once the ES|QL rule no longer detects errors above threshold — typically within 1–2 minutes of resolving the fault.
+
+✅ **Ready to continue when** the Chaos Controller shows the channel back at STANDBY.
 
 ---
 
 <details>
 <summary>🇧🇷 <strong>Português — clique para expandir</strong></summary>
 
-# Diferencial Competitivo 1: Unidade Arquitetônica
+# Resposta da IA: Investigar e Resolver
 
-Nove microsserviços da Claro estão gerando continuamente rastreamentos e logs **reais** via OpenTelemetry — todos fluindo para o mesmo armazenamento Elasticsearch. Neste desafio você irá do rastreamento APM em tempo real diretamente para sua linha de log correlacionada sem trocar de ferramenta, aba ou linguagem de consulta.
-
----
-
-## Passo 1: Encontrar Serviços com Mais Erros via ES|QL
-
-Abra a aba **Elastic Serverless** → **Discover** → mude para o modo **ES|QL** e execute:
-
-```esql
-FROM logs.otel, logs.otel.*
-| WHERE @timestamp > NOW() - 15 MINUTES
-| WHERE severity_text == "ERROR"
-| STATS errors = COUNT(*) BY service.name
-| SORT errors DESC
-| LIMIT 10
-```
-
-> Você verá todos os 9 serviços da Claro classificados por contagem de erros. Serviços com falhas ativas de chaos mostrarão números muito maiores.
+O alerta que você viu no desafio anterior acionou automaticamente um workflow com IA. Vamos acompanhá-lo e fechar o incidente.
 
 ---
 
-## Passo 2: Obter um Trace ID de um Log com Falha
+## Passo 1 — Ver o Workflow Executar
 
-Encontre um log de ERRO que tenha um `trace.id` — este é o elo que conecta logs a rastreamentos:
+Clique na aba **Elastic Serverless** — ela abre diretamente em **Observability → Workflows**.
 
-```esql
-FROM logs.otel, logs.otel.*
-| WHERE @timestamp > NOW() - 5 MINUTES
-| WHERE severity_text == "ERROR" AND trace.id IS NOT NULL
-| KEEP service.name, body.text, trace.id, @timestamp
-| SORT @timestamp DESC
-| LIMIT 5
-```
+Encontre o workflow **Claro Network Operations Center Significant Event Notification** e clique na execução mais recente. Você verá as etapas rodando em tempo real:
 
-Copie o valor de `trace.id` de qualquer linha (uma string hexadecimal de 32 caracteres).
+| Etapa | O que faz | Tempo típico |
+|-------|-----------|-------------|
+| `enrich_context` | Consulta ES|QL — encontra logs correspondentes ao tipo de erro | < 1 seg |
+| `count_errors` | Consulta ES|QL — conta erros totais nos últimos 15 minutos | < 1 seg |
+| `run_rca` | Agente IA — pesquisa logs, rastreamentos, correlaciona sinais, escreve RCA | ~1–2 min |
+| `create_case` | Cria um caso no Kibana com o RCA como descrição | < 1 seg |
+| `audit_log` | Grava um registro no índice de eventos significativos | < 1 seg |
 
----
-
-## Passo 3: Pivotar para Todos os Logs Correlacionados — O Jeito Elastic
-
-Cole seu `trace.id` nesta consulta para ver **todas as linhas de log dessa mesma requisição**, em todos os serviços envolvidos:
-
-```esql
-FROM logs.otel, logs.otel.*
-| WHERE trace.id == "<cole-seu-trace-id-aqui>"
-| KEEP @timestamp, service.name, severity_text, body.text
-| SORT @timestamp ASC
-```
-
-> **No Splunk:** Você está agora em um segundo produto (Splunk Cloud), executando uma segunda pesquisa em SPL, em outra aba do navegador, torcendo para que a janela de retenção de logs corresponda.
->
-> **No Elastic:** Mesmo ES|QL, mesmo armazenamento, mesma sessão. **Uma plataforma. Zero troca de contexto.**
+> **A diferença do Elastic:** Toda essa cadeia — alerta → workflow → agente IA → caso — roda em uma única plataforma.
 
 ---
 
-## Passo 4: Ver a Correlação Nativa APM ↔ Log no Kibana
+## Passo 2 — Ler a Análise de Causa Raiz da IA
 
-Nenhuma consulta necessária — o Kibana faz isso automaticamente:
+Após o `run_rca` concluir, vá para **Observability → Cases**.
 
-1. Na aba **Elastic Serverless** vá para **Applications → Service inventory**
-2. Clique em qualquer serviço — por exemplo **mobile-core** ou **billing-engine**
-3. Clique em qualquer **transação** para abrir o waterfall de rastreamento
-4. Clique na aba **Logs** no topo do painel de detalhes do rastreamento
+Um novo caso estará lá automaticamente. Abra-o para ver:
+- Qual serviço falhou e por quê
+- Quais serviços downstream foram afetados
+- O que a IA recomenda como ação de remediação
 
-O Kibana mostra automaticamente todas as linhas de log correlacionadas ao rastreamento via o campo `trace.id` compartilhado — sem configuração, sem copiar e colar, sem segundo produto.
+Clique em **View Conversation** para abrir o histórico completo do agente IA.
 
 ---
 
-## ✅ Concluído Quando:
+## Passo 3 — Resolver a Falha
 
-- [ ] Sua consulta ES|QL de erros mostra os serviços da Claro classificados por taxa de erros
-- [ ] Você obteve um `trace.id` de uma entrada de log com falha
-- [ ] Você consultou todos os logs desse rastreamento com uma única instrução ES|QL
-- [ ] Você clicou na aba **Logs** dentro de um detalhe de rastreamento APM — um clique, sem troca de produto
+Volte para a aba **Chaos Controller**.
+
+No painel **Active Channels**, encontre a falha injetada e clique em **RESOLVE**. O canal volta imediatamente para **STANDBY**.
+
+---
+
+## Passo 4 — Verificar a Resolução
+
+O card do canal desaparece do painel Active Channels e o status volta para **STANDBY**.
+
+Em **Elastic Serverless → Observability → Alerts**, o alerta se recupera automaticamente assim que a regra ES|QL não detecta mais erros acima do limite — geralmente em 1–2 minutos após resolver a falha.
+
+✅ **Pronto para continuar quando** o Chaos Controller mostrar o canal de volta em STANDBY.
 
 </details>

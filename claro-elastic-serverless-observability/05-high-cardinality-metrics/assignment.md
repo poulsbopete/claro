@@ -93,225 +93,107 @@ timelimit: 2700
 enhanced_loading: null
 ---
 
-# Competitive Edge 2: Elastic Streams — Intelligent Partitioning
+# Elastic Streams — Zero-Touch Data Control
 
-Elastic has already been watching the live Claro log stream. Open the **Elastic Serverless** tab — you're on the Streams page.
-
----
-
-## Step 1: Open logs.otel and Review Partitioning Suggestions
-
-1. Click **`logs.otel`** in the Streams list
-2. Click the **Partitioning** tab at the top
-
-Kibana has analyzed the last 1,000 documents from `logs.otel` and automatically identified that this stream contains data from multiple Claro services. You'll see suggested child streams like:
-
-- `logs.otel.billing-engine`
-- `logs.otel.mobile-core`
-- `logs.otel.voice-platform`
-- `logs.otel.noc-dashboard`
-- `logs.otel.content-delivery`
-- ... (one per service)
-
-Each suggestion shows the **percentage of log volume** that service represents, along with a live **Data Preview** of the actual log messages that would be routed there.
-
-> **Why this matters:** Kibana did the analysis automatically. In Splunk, a platform engineer would need to manually write Collector routing rules — reading the data schema, choosing split dimensions, testing in staging, then deploying. Here, Elastic shows you the answer.
+The fault is resolved. Now see the second competitive differentiator: **Elastic Streams** gives you per-service data routing, retention, and processing rules — without touching a single agent config.
 
 ---
 
-## Step 2: Accept Two Partitions
+## Step 1 — Open the Streams Page
 
-Click **Accept** on **at least two** of the suggested partitions — for example:
+The **Elastic Serverless** tab opens on **Observability → Streams**. You'll see the `logs.otel` stream — this is where all 9 Claro services have been sending their OpenTelemetry logs.
 
-1. `logs.otel.billing-engine` — billing and OCS charging events (highest financial impact)
-2. `logs.otel.mobile-core` — 5G/4G core network events
+Click **`logs.otel`** to open it, then click the **Partitioning** tab.
 
-After accepting, Kibana immediately:
-- Creates the child streams `logs.otel.billing-engine` and `logs.otel.mobile-core`
-- Sets up routing rules so new logs from those services go to their dedicated stream
-- `logs.otel` continues receiving logs from all other services
-
-> **The Splunk equivalent:** Modify `otelcol-contrib.yaml` with routing processor rules, deploy to all collector nodes, wait for restart, verify in Splunk. No data preview. No automatic suggestions. And if you get it wrong, data goes to the wrong destination until you fix and redeploy.
+> Elastic has already analyzed the last 1,000 documents and automatically detected that this stream contains data from 9 different services. No configuration required — it read your data and generated the suggestions.
 
 ---
 
-## Step 3: Set Different Retention on Each Child Stream
+## Step 2 — Review the Auto-Generated Suggestions
 
-Click **`logs.otel.billing-engine`** from the Streams list.
+You'll see suggested child streams like:
 
-1. Click the **Retention** tab
-2. Change retention to **7 days** → Save
-   - Billing logs need detail for rapid incident triage, but OCS CDR data has compliance rules
+- `logs.otel.billing-engine` — billing and OCS charging events
+- `logs.otel.mobile-core` — 5G/4G core network events  
+- `logs.otel.voice-platform` — SIP/IMS events
+- (one per service, with live traffic percentages)
 
-Now click **`logs.otel.mobile-core`**:
+Each suggestion shows **what percentage of log volume** that service represents and a **live data preview** of real log messages.
 
-1. Click the **Retention** tab
-2. Change retention to **30 days** → Save
-   - 5G core events are needed longer for capacity planning and handover analysis
-
-> In Splunk, retention is set at the **index level** via DDAA — a global policy. You cannot set different retention for different services within the same index. If `billing-engine` and `mobile-core` share an index (to save MTS costs), they share a retention policy. Period.
-
----
-
-## Step 4: Add a Processing Rule to Drop a High-Cardinality Field
-
-Click **`logs.otel.mobile-core`** → **Processing** tab:
-
-1. Click **Add processor**
-2. Under **Remove**, select **Remove** (the single-field remover — not "Remove by prefix" or "Drop document")
-3. In the **Field** box, type: `kubernetes.pod.uid`
-4. Click the **"Add kubernetes.pod.uid as a custom field"** link that appears below the field box (the ↲ icon) — this registers the field in the stream schema
-5. Click **Create**
-
-> **Tip:** The "Add as a custom field" prompt appears whenever you reference a field that isn't already in the stream's schema. You must click it before the processor can be saved.
-
-This drops `kubernetes.pod.uid` **only from the mobile-core stream** — the billing-engine stream still retains it for pod-level incident correlation.
-
-> **This is the core Splunk cost problem:** In Splunk Observability Cloud, `kubernetes.pod.uid` creates a new MTS for every pod. With hundreds of 5G pods cycling on every deployment, bills explode. The only fix is dropping it at the Collector — globally, for all destinations. In Elastic, you drop it from one stream while keeping it in another.
+| Capability | Elastic Streams | Splunk |
+|------------|----------------|--------|
+| Auto-detect routing candidates | ✅ Analyzes live data | ❌ Manual pipeline config |
+| Per-service retention | ✅ Each child stream independent | ❌ Global DDAA policy |
+| Drop fields per-stream | ✅ Processing rules | ❌ Global Collector restart |
+| Zero agent changes | ✅ | ❌ Requires Collector redeploy |
 
 ---
 
-## Step 5: Verify in the Streams List
+## Step 3 — Accept a Partition
 
-Go back to the Streams list. You should now see your child streams alongside `logs.otel`:
+Click **Accept** on `logs.otel.billing-engine`.
 
-| Stream | Purpose | Retention |
-|--------|---------|-----------|
-| `logs.otel` | All other services | Indefinite |
-| `logs.otel.billing-engine` | OCS/CDR billing events | 7 days |
-| `logs.otel.mobile-core` | 5G/4G core events | 30 days |
+Elastic immediately:
+1. Creates the child stream `logs.otel.billing-engine`
+2. Routes new logs from billing-engine to its own dedicated stream
+3. Keeps `logs.otel` receiving everything else — no data loss, no downtime
 
-Switch to the **Elastic Serverless** tab → **Discover → ES|QL** and confirm data is routing to the child streams:
+Now you can set a **7-day retention** on `billing-engine` for fast incident triage while keeping the parent stream at 30 days. Add a `drop_field` rule to remove PII from billing logs without affecting mobile-core logs at all.
 
-```esql
-FROM logs.otel, logs.otel.*
-METADATA _index
-| WHERE @timestamp > NOW() - 5 MINUTES
-| STATS log_count = COUNT(*) BY _index, service.name
-| SORT log_count DESC
-```
+> **In Splunk:** A platform engineer would write Collector routing rules in YAML, deploy to every collector node, wait for restart, verify in Splunk, then fix mistakes and redeploy. No data preview. No automatic suggestions.
 
-You'll see `billing-engine` and `mobile-core` logs appearing under their own `_index` values (`logs.otel.billing-engine-*`, `logs.otel.mobile-core-*`) — routed automatically, zero agent changes.
-
----
-
-## ✅ Complete When:
-
-- [ ] You reviewed the auto-generated partitioning suggestions in `logs.otel → Partitioning`
-- [ ] You accepted at least two partition suggestions and new child streams appeared
-- [ ] You set different retention policies on each child stream
-- [ ] You added a `drop_field` processing rule to one stream (without affecting others)
+✅ **That's the full demo.** Fault injected → detected by ES|QL alert → AI workflow investigated and created a case → operator resolved → verified in Chaos Controller → competitive edge demonstrated in Streams.
 
 ---
 
 <details>
 <summary>🇧🇷 <strong>Português — clique para expandir</strong></summary>
 
-# Diferencial Competitivo 2: Elastic Streams — Particionamento Inteligente
+# Elastic Streams — Controle de Dados Sem Tocar nos Agentes
 
-O Elastic já está monitorando o stream de logs da Claro em tempo real. Abra a aba **Elastic Serverless** — você está na página de Streams.
-
----
-
-## Passo 1: Abrir logs.otel e Revisar as Sugestões de Particionamento
-
-1. Clique em **`logs.otel`** na lista de Streams
-2. Clique na aba **Partitioning** no topo
-
-O Kibana analisou os últimos 1.000 documentos de `logs.otel` e identificou automaticamente que este stream contém dados de múltiplos serviços da Claro. Você verá streams filhos sugeridos como:
-
-- `logs.otel.billing-engine`
-- `logs.otel.mobile-core`
-- `logs.otel.voice-platform`
-- `logs.otel.noc-dashboard`
-- `logs.otel.content-delivery`
-- ... (um por serviço)
-
-Cada sugestão mostra o **percentual do volume de logs** que aquele serviço representa, junto com uma **pré-visualização de dados** ao vivo das mensagens de log que seriam roteadas para lá.
-
-> **Por que isso importa:** O Kibana fez a análise automaticamente. No Splunk, um engenheiro de plataforma precisaria escrever manualmente regras de roteamento no Collector — lendo o esquema de dados, escolhendo dimensões de divisão, testando em staging e depois implantando. Aqui, o Elastic mostra a resposta automaticamente.
+A falha foi resolvida. Agora veja o segundo diferencial competitivo: **Elastic Streams** oferece roteamento, retenção e regras de processamento por serviço — sem tocar em nenhuma configuração de agente.
 
 ---
 
-## Passo 2: Aceitar Dois Particionamentos
+## Passo 1 — Abrir a Página Streams
 
-Clique em **Aceitar** em **pelo menos dois** dos particionamentos sugeridos — por exemplo:
+A aba **Elastic Serverless** abre em **Observability → Streams**. Você verá o stream `logs.otel` — é onde todos os 9 serviços Claro enviam seus logs OpenTelemetry.
 
-1. `logs.otel.billing-engine` — eventos de cobrança e OCS (maior impacto financeiro)
-2. `logs.otel.mobile-core` — eventos do core de rede 5G/4G
+Clique em **`logs.otel`** para abri-lo, depois clique na aba **Partitioning**.
 
-Após aceitar, o Kibana imediatamente:
-- Cria os streams filhos `logs.otel.billing-engine` e `logs.otel.mobile-core`
-- Configura regras de roteamento para que novos logs desses serviços vão para seu stream dedicado
-- `logs.otel` continua recebendo logs de todos os outros serviços
-
-> **O equivalente no Splunk:** Modificar `otelcol-contrib.yaml` com regras de roteamento, implantar em todos os nós coletores, aguardar reinicialização, verificar no Splunk. Sem pré-visualização. Sem sugestões automáticas. E se errar, os dados vão para o destino errado até corrigir e reimplantar.
+> O Elastic já analisou os últimos 1.000 documentos e detectou automaticamente que este stream contém dados de 9 serviços diferentes. Sem configuração — ele leu seus dados e gerou as sugestões.
 
 ---
 
-## Passo 3: Definir Retenção Diferente em Cada Stream Filho
+## Passo 2 — Revisar as Sugestões Geradas Automaticamente
 
-Clique em **`logs.otel.billing-engine`** na lista de Streams.
+Você verá streams filhos sugeridos como:
 
-1. Clique na aba **Retention**
-2. Mude a retenção para **7 dias** → Salvar
-   - Logs de cobrança precisam de detalhes para triagem rápida de incidentes
+- `logs.otel.billing-engine` — eventos de cobrança e OCS
+- `logs.otel.mobile-core` — eventos do core 5G/4G
+- `logs.otel.voice-platform` — eventos SIP/IMS
+- (um por serviço, com percentuais de volume de tráfego ao vivo)
 
-Agora clique em **`logs.otel.mobile-core`**:
-
-1. Clique na aba **Retention**
-2. Mude a retenção para **30 dias** → Salvar
-   - Eventos do core 5G são necessários por mais tempo para planejamento de capacidade e análise de handover
-
-> No Splunk, a retenção é definida no **nível do índice** via DDAA — uma política global. Você não pode definir retenções diferentes para serviços diferentes dentro do mesmo índice.
-
----
-
-## Passo 4: Adicionar uma Regra de Processamento para Remover um Campo de Alta Cardinalidade
-
-Clique em **`logs.otel.mobile-core`** → aba **Processing**:
-
-1. Clique em **Add processor**
-2. Em **Remove**, selecione **Remove** (removedor de campo único — não "Remove by prefix" nem "Drop document")
-3. No campo **Field**, digite: `kubernetes.pod.uid`
-4. Clique no link **"Add kubernetes.pod.uid as a custom field"** que aparece abaixo do campo (o ícone ↲) — isso registra o campo no esquema do stream
-5. Clique em **Create**
-
-> **Dica:** O prompt "Add as a custom field" aparece sempre que você referencia um campo que ainda não está no esquema do stream. Você deve clicar nele antes de salvar o processador.
-
-Isso remove `kubernetes.pod.uid` **apenas do stream mobile-core** — o stream billing-engine ainda o mantém para correlação de incidentes no nível do pod.
-
-> **Este é o problema central de custo do Splunk:** No Splunk Observability Cloud, `kubernetes.pod.uid` cria um novo MTS para cada pod. Com centenas de pods 5G rotacionando a cada implantação, as faturas explodem. A única solução é remover o campo no Collector — globalmente, para todos os destinos. No Elastic, você remove de um stream sem afetar os outros.
+| Capacidade | Elastic Streams | Splunk |
+|------------|----------------|--------|
+| Detectar candidatos automaticamente | ✅ Analisa dados ao vivo | ❌ Config manual no pipeline |
+| Retenção por serviço | ✅ Cada stream filho independente | ❌ Política DDAA global |
+| Remover campos por stream | ✅ Regras de processamento | ❌ Restart global do Collector |
+| Zero mudanças no agente | ✅ | ❌ Requer redesploy do Collector |
 
 ---
 
-## Passo 5: Verificar na Lista de Streams
+## Passo 3 — Aceitar uma Partição
 
-Volte para a lista de Streams. Você deve ver seus streams filhos ao lado de `logs.otel`:
+Clique em **Accept** em `logs.otel.billing-engine`.
 
-| Stream | Propósito | Retenção |
-|--------|----------|---------|
-| `logs.otel` | Todos os outros serviços | Indefinida |
-| `logs.otel.billing-engine` | Eventos OCS/CDR de cobrança | 7 dias |
-| `logs.otel.mobile-core` | Eventos do core 5G/4G | 30 dias |
+O Elastic imediatamente:
+1. Cria o stream filho `logs.otel.billing-engine`
+2. Roteia novos logs do billing-engine para seu próprio stream dedicado
+3. Mantém `logs.otel` recebendo todo o resto — sem perda de dados, sem downtime
 
-Confirme que os dados estão sendo roteados para os streams filhos via ES|QL:
+> **No Splunk:** Um engenheiro de plataforma escreveria regras de roteamento no Collector em YAML, faria deploy em cada nó de coletor, esperaria o restart, verificaria no Splunk, consertaria erros e refaria o deploy. Sem preview de dados. Sem sugestões automáticas.
 
-```esql
-FROM logs.otel, logs.otel.*
-METADATA _index
-| WHERE @timestamp > NOW() - 5 MINUTES
-| STATS log_count = COUNT(*) BY _index, service.name
-| SORT log_count DESC
-```
-
----
-
-## ✅ Concluído Quando:
-
-- [ ] Você revisou as sugestões de particionamento geradas automaticamente em `logs.otel → Partitioning`
-- [ ] Você aceitou pelo menos duas sugestões e novos streams filhos apareceram
-- [ ] Você definiu políticas de retenção diferentes em cada stream filho
-- [ ] Você adicionou uma regra de processamento `drop_field` a um stream (sem afetar os outros)
+✅ **É o demo completo.** Falha injetada → detectada por alerta ES|QL → workflow de IA investigou e criou um caso → operador resolveu → verificado no Chaos Controller → diferencial competitivo demonstrado no Streams.
 
 </details>
