@@ -124,7 +124,7 @@ Go back to the **Chaos Controller** tab.
 
 In the **Active Channels** panel, find the fault you injected and click **RESOLVE**. The channel immediately returns to **STANDBY**.
 
-> This simulates the NOC operator acting on the AI's recommendation. In a fully automated setup, the **Remediation Action** workflow (visible in Workflows) can trigger this automatically — queuing a remediation command that the poller picks up and executes without human intervention.
+> **Note:** Auto-remediation via the workflow is not enabled in this environment. Click **RESOLVE** manually in the Chaos Controller to close the incident — this represents the NOC operator acting on the AI's recommendation.
 
 ---
 
@@ -183,6 +183,8 @@ Clique em **View Conversation** para abrir o histórico completo do agente IA.
 Volte para a aba **Chaos Controller**.
 
 No painel **Active Channels**, encontre a falha injetada e clique em **RESOLVE**. O canal volta imediatamente para **STANDBY**.
+
+> **Nota:** A remediação automática via workflow não está habilitada neste ambiente. Clique em **RESOLVE** manualmente no Chaos Controller para fechar o incidente.
 
 ---
 

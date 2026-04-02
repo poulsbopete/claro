@@ -114,7 +114,7 @@ Click **`logs.otel`** to open it, then click the **Partitioning** tab.
 You'll see suggested child streams like:
 
 - `logs.otel.billing-engine` — billing and OCS charging events
-- `logs.otel.mobile-core` — 5G/4G core network events  
+- `logs.otel.mobile-core` — 5G/4G core network events
 - `logs.otel.voice-platform` — SIP/IMS events
 - (one per service, with live traffic percentages)
 
